@@ -1,0 +1,1 @@
+function n(){return{formatCurrency:r=>r==null||isNaN(Number(r))?"R$ 0,00":new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(Number(r)),formatNumber:r=>r==null||isNaN(Number(r))?"0,00":new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(r))}}export{n as u};

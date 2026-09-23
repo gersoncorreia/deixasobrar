@@ -79,8 +79,9 @@ PROMPT;
                 ]);
 
                 if ($response->successful()) {
-                    $jsonText = $response->json('candidates.0.content.parts.0.text');
-                    $parsed = json_decode($jsonText, true);
+                    $jsonText = (string) $response->json('candidates.0.content.parts.0.text');
+                    $cleanJson = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($jsonText));
+                    $parsed = json_decode($cleanJson, true) ?: json_decode($jsonText, true);
 
                     if (is_array($parsed) && isset($parsed['total_amount'])) {
                         return $this->normalizeResult($parsed);
