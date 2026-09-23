@@ -1,0 +1,61 @@
+{
+  "name": "DeixaSobrar - Gestão Financeira Pessoal",
+  "short_name": "DeixaSobrar",
+  "description": "Cuide dos gastos e deixe sobrar para o que importa. Teto diário seguro e fim dos vazamentos de dinheiro.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Escanear Cupom OCR",
+      "short_name": "Scanner OCR",
+      "url": "/scanner",
+      "description": "Abrir câmera e ler cupom com Inteligência Artificial",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Visão Geral",
+      "short_name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Ver Teto Diário Seguro e saldo",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Novo Lançamento",
+      "short_name": "Lançamento",
+      "url": "/transacoes",
+      "description": "Registrar saída ou entrada manual",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

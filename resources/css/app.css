@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@source "../views/**/*.blade.php";
+@source "../js/**/*.js";
+@source "../js/**/*.vue";
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif;
+    
+    --color-emerald-450: #10b981;
+    --color-slate-925: #0b1120;
+    --color-slate-950: #020617;
+}
+
+/* Safe Area Insets for Mobile Devices & PWA */
+.pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+    padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card {
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-card-glow {
+    background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 70%),
+                rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* ==========================================================================
+   Keyframe Animations for Delightful UI Transitions
+   ========================================================================== */
+
+@keyframes floatSlow {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes floatReverse {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(8px);
+    }
+}
+
+@keyframes shimmerSweep {
+    0% {
+        transform: translateX(-150%) skewX(-20deg);
+    }
+    50%, 100% {
+        transform: translateX(250%) skewX(-20deg);
+    }
+}
+
+@keyframes breatheGlow {
+    0%, 100% {
+        opacity: 0.25;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.45;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes pulseBorder {
+    0%, 100% {
+        border-color: rgba(16, 185, 129, 0.3);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+    50% {
+        border-color: rgba(52, 211, 153, 0.7);
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.35);
+    }
+}
+
+@keyframes twinkle {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.85);
+    }
+}
+
+.animate-float-slow {
+    animation: floatSlow 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+    animation: floatReverse 6s ease-in-out infinite;
+}
+
+.animate-breathe-glow {
+    animation: breatheGlow 8s ease-in-out infinite;
+}
+
+.animate-pulse-border {
+    animation: pulseBorder 3s ease-in-out infinite;
+}
+
+.animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+}
+
+/* Shimmer light sweep button effect */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        60deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.25) 50%,
+        transparent 70%
+    );
+    transform: translateX(-150%) skewX(-20deg);
+    animation: shimmerSweep 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Scroll Reveal System (IntersectionObserver & v-reveal Directive)
+   ========================================================================== */
+
+[data-reveal],
+.reveal-element {
+    opacity: 0;
+    filter: blur(8px);
+    transition: opacity 1.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.6s cubic-bezier(0.16, 1, 0.3, 1),
+                filter 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+}
+
+.reveal-up,
+[data-reveal] {
+    transform: translateY(24px);
+}
+
+.reveal-scale,
+[data-reveal="scale"] {
+    transform: scale(0.94) translateY(16px);
+}
+
+.reveal-left,
+[data-reveal="fade-left"] {
+    transform: translateX(-24px);
+}
+
+.reveal-right,
+[data-reveal="fade-right"] {
+    transform: translateX(24px);
+}
+
+[data-reveal].is-revealed,
+.reveal-element.is-revealed {
+    opacity: 1 !important;
+    transform: translate3d(0, 0, 0) scale(1) !important;
+    filter: blur(0px) !important;
+}
+
+/* Stagger Delays */
+.delay-75  { transition-delay: 75ms; }
+.delay-100 { transition-delay: 100ms; }
+.delay-150 { transition-delay: 150ms; }
+.delay-200 { transition-delay: 200ms; }
+.delay-250 { transition-delay: 250ms; }
+.delay-300 { transition-delay: 300ms; }
+.delay-350 { transition-delay: 350ms; }
+.delay-400 { transition-delay: 400ms; }
+.delay-500 { transition-delay: 500ms; }
+
+/* Accessible Motion */
+@media (prefers-reduced-motion: reduce) {
+    [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+    .animate-float-slow,
+    .animate-float-reverse,
+    .animate-breathe-glow,
+    .animate-pulse-border,
+    .animate-twinkle,
+    .btn-shimmer::after {
+        animation: none !important;
+    }
+}
