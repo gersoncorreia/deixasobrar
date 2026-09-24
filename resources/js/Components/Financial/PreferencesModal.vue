@@ -78,7 +78,7 @@ const submit = async () => {
         <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
             
             <div 
-                class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95"
+                class="glass-panel w-full max-w-md rounded-2xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95"
                 @click.stop
             >
                 <button 

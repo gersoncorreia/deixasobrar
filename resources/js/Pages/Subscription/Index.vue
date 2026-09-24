@@ -222,7 +222,7 @@ const cancelSubscription = () => {
                 <div 
                     v-for="plan in plans" 
                     :key="plan.tier"
-                    class="relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300"
+                    class="relative rounded-2xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300"
                     :class="plan.popular 
                         ? 'bg-gradient-to-b from-purple-950/50 to-slate-900/90 border-2 border-purple-500/50 shadow-2xl shadow-purple-950/40' 
                         : 'bg-slate-900/60 border border-slate-800/80 hover:border-slate-700'"
@@ -315,7 +315,7 @@ const cancelSubscription = () => {
             v-if="isModalOpen" 
             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in"
         >
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 max-w-lg w-full space-y-5 shadow-2xl relative">
                 
                 <div class="flex items-center justify-between pb-4 border-b border-slate-800">
                     <div>

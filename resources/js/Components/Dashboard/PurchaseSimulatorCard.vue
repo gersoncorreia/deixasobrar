@@ -43,7 +43,7 @@ const simulationStatus = computed(() => {
 </script>
 
 <template>
-    <div class="glass-panel rounded-3xl p-6 sm:p-7 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
+    <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
             <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
                 <Calculator class="w-4 h-4" />

@@ -101,7 +101,7 @@ const submit = async () => {
             
             <!-- Modal Body with zoom-in -->
             <div 
-                class="glass-panel w-full max-w-lg rounded-3xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95"
+                class="glass-panel w-full max-w-lg rounded-2xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95"
                 @click.stop
             >
                 <!-- Close Button -->

@@ -43,10 +43,10 @@ const totalPending = computed(() => {
         <!-- 1. Alerta de Contas Fixas Próximas (se houver contas pendentes) -->
         <div 
             v-if="pendingBills.length > 0"
-            class="rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30 shadow-lg relative overflow-hidden flex items-center justify-between gap-3"
+            class="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30 shadow-lg relative overflow-hidden flex items-center justify-between gap-3"
         >
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400">
                     <Calendar class="w-5 h-5" />
                 </div>
                 <div class="min-w-0">
@@ -84,10 +84,10 @@ const totalPending = computed(() => {
         <!-- 2. Banner de Dica Inteligente de Economia (quando não há contas atrasadas) -->
         <div 
             v-else
-            class="rounded-3xl p-4 sm:p-5 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 shadow-lg relative overflow-hidden flex items-center justify-between gap-3"
+            class="rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/30 shadow-lg relative overflow-hidden flex items-center justify-between gap-3"
         >
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0 text-emerald-400">
                     <Sparkles class="w-5 h-5" />
                 </div>
                 <div class="min-w-0">

@@ -164,7 +164,7 @@ const getAccountIcon = (type) => {
             </div>
 
             <!-- Consolidated Balance Banner -->
-            <div class="glass-panel rounded-3xl p-6 border border-slate-800 bg-slate-900/40 relative overflow-hidden">
+            <div class="glass-panel rounded-2xl p-6 border border-slate-800 bg-slate-900/40 relative overflow-hidden">
                 <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -191,7 +191,7 @@ const getAccountIcon = (type) => {
             <!-- Add Account Form Collapsible -->
             <div 
                 v-if="showAddForm"
-                class="glass-panel rounded-3xl p-6 border border-emerald-500/30 bg-slate-900/90 animate-fadeIn space-y-4"
+                class="glass-panel rounded-2xl p-6 border border-emerald-500/30 bg-slate-900/90 animate-fadeIn space-y-4"
             >
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <PlusCircle class="w-4 h-4 text-emerald-400" />
@@ -266,7 +266,7 @@ const getAccountIcon = (type) => {
                 <div 
                     v-for="acc in accounts" 
                     :key="acc.id"
-                    class="glass-panel rounded-3xl p-5 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group"
+                    class="glass-panel rounded-2xl p-5 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between group"
                 >
                     <!-- View Mode -->
                     <div v-if="editingAccountId !== acc.id">

@@ -15,7 +15,7 @@ const { formatCurrency } = useCurrencyFormat();
 <template>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <!-- Card 1: Total Drenado -->
-        <div class="glass-panel rounded-3xl p-6 border border-amber-500/25 bg-amber-950/10 relative overflow-hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-amber-500/25 bg-amber-950/10 relative overflow-hidden">
             <div class="absolute -right-6 -top-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">
                 <span>Ralo Total Identificado</span>
@@ -30,7 +30,7 @@ const { formatCurrency } = useCurrencyFormat();
         </div>
 
         <!-- Card 2: Impacto Diário no Teto -->
-        <div class="glass-panel rounded-3xl p-6 border border-rose-500/25 bg-rose-950/10 relative overflow-hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-rose-500/25 bg-rose-950/10 relative overflow-hidden">
             <div class="absolute -right-6 -top-6 w-28 h-28 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs font-bold text-rose-400 uppercase tracking-wider mb-2">
                 <span>Dreno Médio Diário</span>
@@ -46,7 +46,7 @@ const { formatCurrency } = useCurrencyFormat();
         </div>
 
         <!-- Card 3: Janela do Ciclo -->
-        <div class="glass-panel rounded-3xl p-6 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
             <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                 <span>Dias Até o Pagamento</span>
                 <Calendar class="w-4 h-4 text-emerald-400" />

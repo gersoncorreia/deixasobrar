@@ -15,7 +15,7 @@ const { formatCurrency } = useCurrencyFormat();
 </script>
 
 <template>
-    <div class="glass-panel rounded-3xl p-6 border border-slate-800">
+    <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                 <Building2 class="w-4 h-4 text-emerald-400" />

@@ -51,7 +51,7 @@ const handleConfirm = async () => {
 </script>
 
 <template>
-    <div class="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/90 space-y-6">
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 bg-slate-900/90 space-y-6">
         
         <!-- Header & Image Preview -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">

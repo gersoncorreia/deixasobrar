@@ -36,7 +36,7 @@ const getCategoryLabel = (category) => {
 
 <template>
     <div v-if="isOpen && scan" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-        <div class="glass-panel w-full max-w-2xl rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col my-auto max-h-[92vh]">
+        <div class="glass-panel w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col my-auto max-h-[92vh]">
             
             <!-- Modal Header (Estilo Cupom Fiscal Moderno) -->
             <div class="p-6 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between sticky top-0 z-10 backdrop-blur-md">

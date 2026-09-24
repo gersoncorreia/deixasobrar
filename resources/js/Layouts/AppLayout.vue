@@ -125,14 +125,14 @@ const logout = () => {
         </aside>
 
         <!-- Mobile Topbar (Padrão Banco do Brasil: Avatar, Saudação, Olho de Privacidade, Menu) -->
-        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800/80 pt-safe sticky top-0 z-40 backdrop-blur-xl shadow-sm">
+        <header class="md:hidden flex items-center justify-between px-5 pt-4 pb-3.5 bg-slate-900/95 border-b border-slate-800/80 pt-safe sticky top-0 z-40 backdrop-blur-xl shadow-sm">
             <div class="flex items-center gap-3">
                 <!-- User Avatar Button (Abre Gaveta de Perfil/Menu) -->
                 <button 
                     @click="isMobileMenuOpen = true"
-                    class="relative w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-transform"
+                    class="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-transform"
                 >
-                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-black text-emerald-400 text-xs">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-emerald-400 text-xs">
                         {{ user.name?.charAt(0) || 'U' }}
                     </div>
                     <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span>
@@ -144,23 +144,23 @@ const logout = () => {
                         <span class="text-sm font-extrabold text-white leading-none">
                             Olá, {{ user.name?.split(' ')[0] || 'Usuário' }}
                         </span>
-                        <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                             PRO
                         </span>
                     </div>
-                    <span class="text-[10px] text-slate-400 font-medium block mt-0.5">
+                    <span class="text-[10px] text-slate-400 font-medium block mt-1">
                         DeixaSobrar • Gestão Ativa
                     </span>
                 </div>
             </div>
 
             <!-- Topbar Actions: Privacy Eye & Drawer Trigger -->
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-2">
                 <!-- Privacy Mode Button (Olho de Privacidade) -->
                 <button 
                     @click="togglePrivacy" 
                     type="button"
-                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700/70 active:scale-95 transition-all shadow-sm"
+                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/80 border border-slate-700/80 active:scale-95 transition-all shadow-sm"
                     :title="isPrivate ? 'Mostrar valores monetários' : 'Ocultar valores monetários'"
                 >
                     <EyeOff v-if="isPrivate" class="w-4 h-4 text-emerald-400" />
@@ -171,7 +171,7 @@ const logout = () => {
                 <button 
                     @click="isMobileMenuOpen = true"
                     type="button"
-                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700/70 active:scale-95 transition-all shadow-sm"
+                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/80 border border-slate-700/80 active:scale-95 transition-all shadow-sm"
                     title="Menu de Módulos"
                 >
                     <Menu class="w-4 h-4" />
@@ -198,7 +198,7 @@ const logout = () => {
                 </a>
             </div>
 
-            <main class="flex-1 px-4 sm:px-8 lg:px-10 py-5 sm:py-8 w-full max-w-[1700px] mx-auto">
+            <main class="flex-1 px-4 sm:px-8 lg:px-10 pt-6 pb-8 sm:py-8 w-full max-w-[1700px] mx-auto">
                 <slot />
             </main>
         </div>
@@ -208,11 +208,11 @@ const logout = () => {
             <!-- 1. Visão Geral / Início -->
             <Link 
                 href="/dashboard" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/dashboard') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
-                    class="p-1 rounded-xl transition-all"
+                    class="p-1 rounded-lg transition-all"
                     :class="isActive('/dashboard') ? 'bg-emerald-500/15' : ''"
                 >
                     <LayoutDashboard class="w-4 h-4" />
@@ -223,11 +223,11 @@ const logout = () => {
             <!-- 2. Extrato / Lançamentos -->
             <Link 
                 href="/transacoes" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/transacoes') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
-                    class="p-1 rounded-xl transition-all"
+                    class="p-1 rounded-lg transition-all"
                     :class="isActive('/transacoes') ? 'bg-emerald-500/15' : ''"
                 >
                     <ArrowLeftRight class="w-4 h-4" />
@@ -240,9 +240,9 @@ const logout = () => {
                 href="/scanner" 
                 class="flex flex-col items-center -mt-5 group"
             >
-                <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/35 group-active:scale-90 transition-transform">
-                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center group-hover:bg-transparent transition-colors p-2.5">
-                        <Camera class="w-6 h-6 text-emerald-400 group-hover:text-slate-950 transition-colors" />
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/35 group-active:scale-90 transition-transform">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center group-hover:bg-transparent transition-colors p-2">
+                        <Camera class="w-5 h-5 text-emerald-400 group-hover:text-slate-950 transition-colors" />
                     </div>
                 </div>
                 <span class="text-[9px] font-extrabold text-emerald-400 mt-1">Scanner</span>
@@ -251,11 +251,11 @@ const logout = () => {
             <!-- 4. Análises & Gráficos (Agora com acesso direto no Dock!) -->
             <Link 
                 href="/analises" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/analises') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
-                    class="p-1 rounded-xl transition-all"
+                    class="p-1 rounded-lg transition-all"
                     :class="isActive('/analises') ? 'bg-emerald-500/15' : ''"
                 >
                     <PieChart class="w-4 h-4" />
@@ -267,9 +267,9 @@ const logout = () => {
             <button 
                 type="button"
                 @click="isMobileMenuOpen = true"
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
             >
-                <div class="p-1 rounded-xl hover:bg-slate-800/60">
+                <div class="p-1 rounded-lg hover:bg-slate-800/60">
                     <SlidersHorizontal class="w-4 h-4" />
                 </div>
                 <span>Menu</span>

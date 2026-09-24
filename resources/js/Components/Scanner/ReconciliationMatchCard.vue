@@ -42,7 +42,7 @@ const handleReconcile = async (transactionId) => {
 </script>
 
 <template>
-    <div v-if="candidates && candidates.length > 0" class="glass-panel p-6 rounded-3xl border border-teal-500/30 bg-teal-950/10 space-y-4">
+    <div v-if="candidates && candidates.length > 0" class="glass-panel p-6 rounded-2xl border border-teal-500/30 bg-teal-950/10 space-y-4">
         
         <div class="flex items-center gap-2 text-xs font-bold text-teal-400 uppercase tracking-wider">
             <GitMerge class="w-4 h-4" />

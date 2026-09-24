@@ -50,7 +50,7 @@ const formatDate = (dateStr) => {
 </script>
 
 <template>
-    <div class="glass-panel rounded-3xl p-5 sm:p-6 border border-slate-800/80 bg-slate-900/60 shadow-xl">
+    <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800/80 bg-slate-900/60 shadow-xl">
         <!-- Header -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-800/80">
             <div class="flex items-center gap-2">
@@ -81,7 +81,7 @@ const formatDate = (dateStr) => {
                 <!-- Icon & Details -->
                 <div class="flex items-center gap-3 min-w-0">
                     <div 
-                        class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border"
+                        class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
                         :class="tx.amount < 0 
                             ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' 
                             : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'"
@@ -129,7 +129,7 @@ const formatDate = (dateStr) => {
 
         <!-- Empty State (Base limpa para início dos testes) -->
         <div v-else class="py-8 text-center px-4">
-            <div class="w-14 h-14 rounded-3xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center mx-auto mb-3 text-slate-400 shadow-inner">
+            <div class="w-13 h-13 rounded-2xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-center mx-auto mb-3 text-slate-400 shadow-inner">
                 <FileText class="w-7 h-7 text-emerald-400" />
             </div>
             <h4 class="text-sm font-bold text-white mb-1">

@@ -15,9 +15,7 @@ import {
     Sparkles,
     ShieldAlert,
     LogOut,
-    ChevronRight,
-    UserCheck,
-    CheckCircle2
+    ChevronRight
 } from 'lucide-vue-next';
 
 defineProps({
@@ -64,30 +62,30 @@ const handleOpenPreferences = () => {
     <Teleport to="body">
         <div 
             v-if="isOpen" 
-            class="fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/80 backdrop-blur-md transition-opacity duration-300"
+            class="fixed inset-0 z-50 flex flex-col justify-end items-center bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 p-3 sm:p-5"
             @click.self="$emit('close')"
         >
-            <!-- Drawer Sheet -->
+            <!-- Drawer Card (Com margem das bordas e cantos suavizados em rounded-2xl) -->
             <div 
-                class="w-full max-h-[88vh] bg-slate-900 border-t border-slate-800 rounded-t-[32px] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300"
+                class="w-full max-w-lg max-h-[86vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden mb-safe animate-in slide-in-from-bottom-5 duration-300"
             >
                 <!-- Pull Indicator / Handle -->
                 <div class="pt-3 pb-1 flex justify-center">
-                    <div class="w-12 h-1.5 bg-slate-700/80 rounded-full"></div>
+                    <div class="w-10 h-1 bg-slate-700/80 rounded-full"></div>
                 </div>
 
                 <!-- Drawer Header -->
-                <div class="px-5 py-3 flex items-center justify-between border-b border-slate-800/80">
+                <div class="px-5 py-3.5 flex items-center justify-between border-b border-slate-800/80">
                     <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20">
-                            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-black text-emerald-400 text-sm">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20">
+                            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-emerald-400 text-sm">
                                 {{ user.name?.charAt(0) || 'U' }}
                             </div>
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="font-extrabold text-white text-base leading-tight">{{ user.name }}</h3>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                     PRO
                                 </span>
                             </div>
@@ -98,6 +96,7 @@ const handleOpenPreferences = () => {
                     <button 
                         @click="$emit('close')" 
                         class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                        title="Fechar menu"
                     >
                         <X class="w-5 h-5" />
                     </button>
@@ -108,11 +107,11 @@ const handleOpenPreferences = () => {
                     <Link 
                         href="/admin/dashboard" 
                         @click="$emit('close')"
-                        class="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-purple-900/40 via-purple-800/30 to-slate-900 border border-purple-500/40 text-purple-200 hover:border-purple-400 transition-all shadow-lg shadow-purple-950/40"
+                        class="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-purple-900/40 via-purple-800/30 to-slate-900 border border-purple-500/40 text-purple-200 hover:border-purple-400 transition-all shadow-md shadow-purple-950/40"
                     >
                         <div class="flex items-center gap-3">
-                            <div class="p-2 rounded-xl bg-purple-500/20 text-purple-300">
-                                <ShieldAlert class="w-5 h-5" />
+                            <div class="p-2 rounded-lg bg-purple-500/20 text-purple-300">
+                                <ShieldAlert class="w-4 h-4" />
                             </div>
                             <div>
                                 <span class="font-bold text-sm text-white block">Painel Master Admin ⚡</span>
@@ -124,7 +123,7 @@ const handleOpenPreferences = () => {
                 </div>
 
                 <!-- Links List (Scrollable) -->
-                <div class="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+                <div class="flex-1 overflow-y-auto px-5 py-3.5 space-y-2">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block px-1">
                         Todos os Módulos do Sistema
                     </span>
@@ -135,11 +134,11 @@ const handleOpenPreferences = () => {
                             :key="item.name"
                             :href="item.href"
                             @click="$emit('close')"
-                            class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 transition-all group"
+                            class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 transition-all group"
                         >
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :class="item.bg">
-                                    <component :is="item.icon" class="w-5 h-5" :class="item.color" />
+                                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="item.bg">
+                                    <component :is="item.icon" class="w-4 h-4" :class="item.color" />
                                 </div>
                                 <div>
                                     <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
@@ -157,11 +156,11 @@ const handleOpenPreferences = () => {
                     <!-- Configurar Ciclo Salarial Action -->
                     <button 
                         @click="handleOpenPreferences"
-                        class="w-full flex items-center justify-between p-2.5 rounded-2xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-left transition-all group"
+                        class="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-left transition-all group"
                     >
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center shrink-0">
-                                <Sliders class="w-5 h-5 text-teal-400" />
+                            <div class="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
+                                <Sliders class="w-4 h-4 text-teal-400" />
                             </div>
                             <div>
                                 <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
@@ -177,16 +176,16 @@ const handleOpenPreferences = () => {
                 </div>
 
                 <!-- Drawer Footer -->
-                <div class="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between pb-safe">
+                <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between">
                     <div class="text-[11px] text-slate-500">
                         DeixaSobrar PWA v2.0
                     </div>
 
                     <button 
                         @click="logout"
-                        class="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
+                        class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all"
                     >
-                        <LogOut class="w-4 h-4" />
+                        <LogOut class="w-3.5 h-3.5" />
                         <span>Sair da Conta</span>
                     </button>
                 </div>

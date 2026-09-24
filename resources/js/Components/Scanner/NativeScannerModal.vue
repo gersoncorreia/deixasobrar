@@ -209,7 +209,7 @@ onBeforeUnmount(() => {
 
 <template>
     <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-        <div class="glass-panel w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="glass-panel w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col max-h-[92vh]">
             
             <!-- Top Modal Bar -->
             <div class="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between">
@@ -354,7 +354,7 @@ onBeforeUnmount(() => {
 
                     <div 
                         @click="fileInput?.click()"
-                        class="w-full max-w-sm p-8 border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-3xl bg-slate-900/40 flex flex-col items-center justify-center cursor-pointer transition-all"
+                        class="w-full max-w-sm p-8 border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-2xl bg-slate-900/40 flex flex-col items-center justify-center cursor-pointer transition-all"
                     >
                         <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
                             <UploadCloud class="w-7 h-7" />

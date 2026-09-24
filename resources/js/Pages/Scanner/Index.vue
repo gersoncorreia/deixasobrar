@@ -144,7 +144,7 @@ const deleteScan = (scan) => {
             </div>
 
             <!-- History of Scanned Receipts Table -->
-            <div class="glass-panel rounded-3xl border border-slate-800 overflow-hidden">
+            <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
                 <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">

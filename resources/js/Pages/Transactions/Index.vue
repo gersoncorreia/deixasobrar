@@ -164,7 +164,7 @@ const formatMonthLabel = (mStr) => {
             </div>
 
             <!-- Complete Transactions & Filtering Section -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800">
+            <div class="glass-panel rounded-2xl p-5 sm:p-7 border border-slate-800">
                 
                 <!-- Section Header -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

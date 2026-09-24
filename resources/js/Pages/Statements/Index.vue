@@ -137,7 +137,7 @@ const processFiles = async (files) => {
             </div>
 
             <!-- Upload Area Panel -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800">
+            <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-base font-bold text-white flex items-center gap-2">
@@ -180,7 +180,7 @@ const processFiles = async (files) => {
                     @dragleave.prevent="isDragging = false"
                     @drop.prevent="handleFileDrop"
                     :class="isDragging ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]' : 'border-slate-700 hover:border-emerald-400/80 bg-slate-950/40 hover:bg-slate-900/40'"
-                    class="border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all duration-200 group"
+                    class="border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-200 group"
                 >
                     <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                         <Loader2 v-if="isUploading" class="w-7 h-7 text-emerald-400 animate-spin" />
@@ -263,7 +263,7 @@ const processFiles = async (files) => {
             </div>
 
             <!-- Import History Section -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800">
+            <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Clock class="w-4 h-4 text-emerald-400" />
                     <span>Histórico Recente de Extratos Importados</span>

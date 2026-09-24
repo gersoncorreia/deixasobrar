@@ -172,7 +172,7 @@ const deleteCustomBill = async (bill) => {
             </div>
 
             <!-- Summary Cards & Progress Bar Banner -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
+            <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -229,7 +229,7 @@ const deleteCustomBill = async (bill) => {
             <!-- Add Bill Collapsible Form -->
             <div 
                 v-if="showAddForm"
-                class="glass-panel rounded-3xl p-6 border border-emerald-500/30 bg-slate-900/90 animate-fadeIn space-y-4"
+                class="glass-panel rounded-2xl p-6 border border-emerald-500/30 bg-slate-900/90 animate-fadeIn space-y-4"
             >
                 <h3 class="text-sm font-bold text-white flex items-center gap-2">
                     <Sparkles class="w-4 h-4 text-emerald-400" />
@@ -303,7 +303,7 @@ const deleteCustomBill = async (bill) => {
             </div>
 
             <!-- Bills List Panel -->
-            <div class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-3">
+            <div class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800 space-y-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">
                     Contas Fixas Cadastradas ({{ fixedBills.length }})
                 </h3>

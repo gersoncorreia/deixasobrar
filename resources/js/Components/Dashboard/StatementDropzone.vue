@@ -133,7 +133,7 @@ const formatDateBr = (dStr) => {
 </script>
 
 <template>
-    <div id="importar" class="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800">
+    <div id="importar" class="glass-panel rounded-2xl p-6 sm:p-8 border border-slate-800">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">

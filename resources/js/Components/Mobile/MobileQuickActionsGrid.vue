@@ -26,17 +26,17 @@ const actions = [
 </script>
 
 <template>
-    <div class="rounded-3xl bg-slate-900/70 border border-slate-800/80 p-4 shadow-xl backdrop-blur-md">
+    <div class="rounded-2xl bg-slate-900/70 border border-slate-800/80 p-4 shadow-xl backdrop-blur-md">
         <div class="grid grid-cols-4 gap-2.5 sm:gap-3">
             <template v-for="(item, idx) in actions" :key="idx">
                 <!-- If link -->
                 <Link
                     v-if="item.href"
                     :href="item.href"
-                    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-950/40 hover:bg-slate-800/60 border border-slate-800/60 active:scale-95 transition-all text-center group"
+                    class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-950/40 hover:bg-slate-800/60 border border-slate-800/60 active:scale-95 transition-all text-center group"
                 >
                     <div 
-                        class="w-11 h-11 rounded-2xl flex items-center justify-center mb-1.5 border shadow-sm transition-transform group-hover:scale-105"
+                        class="w-11 h-11 rounded-xl flex items-center justify-center mb-1.5 border shadow-sm transition-transform group-hover:scale-105"
                         :class="item.bg"
                     >
                         <component :is="item.icon" class="w-5 h-5" :class="item.color" />
@@ -55,10 +55,10 @@ const actions = [
                         item.action === 'fixed-bills' ? $emit('open-fixed-bills') :
                         item.action === 'simulator' ? $emit('open-simulator') : null
                     "
-                    class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-slate-950/40 hover:bg-slate-800/60 border border-slate-800/60 active:scale-95 transition-all text-center group"
+                    class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-950/40 hover:bg-slate-800/60 border border-slate-800/60 active:scale-95 transition-all text-center group"
                 >
                     <div 
-                        class="w-11 h-11 rounded-2xl flex items-center justify-center mb-1.5 border shadow-sm transition-transform group-hover:scale-105"
+                        class="w-11 h-11 rounded-xl flex items-center justify-center mb-1.5 border shadow-sm transition-transform group-hover:scale-105"
                         :class="item.bg"
                     >
                         <component :is="item.icon" class="w-5 h-5" :class="item.color" />

@@ -301,12 +301,12 @@ watch(() => props.analytics, (newVal) => {
             <div v-show="activeTab === 'health'" class="space-y-6 animate-in fade-in duration-200">
                 
                 <!-- Health Score Card -->
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 relative overflow-hidden bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-950">
+                <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 relative overflow-hidden bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-950">
                     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                         
                         <div class="flex items-center gap-5 sm:gap-6">
                             <!-- Score Circular / Pill Indicator -->
-                            <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-slate-950/80 border-2 flex flex-col items-center justify-center shrink-0 shadow-2xl"
+                            <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-slate-950/80 border-2 flex flex-col items-center justify-center shrink-0 shadow-2xl"
                                 :style="{ borderColor: analytics.health_score.color }"
                             >
                                 <span class="text-3xl sm:text-4xl font-black font-display text-white">
@@ -446,7 +446,7 @@ watch(() => props.analytics, (newVal) => {
             <!-- ABA 2: Evolução Semestral (Histórico) -->
             <!-- ========================================== -->
             <div v-show="activeTab === 'evolution'" class="space-y-6 animate-in fade-in duration-200">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 flex flex-col justify-between">
+                <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 flex flex-col justify-between">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-2">
                         <div>
                             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
@@ -478,7 +478,7 @@ watch(() => props.analytics, (newVal) => {
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
                     <!-- Left: Doughnut Visual Chart -->
-                    <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 flex flex-col justify-between">
+                    <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 flex flex-col justify-between">
                         <div class="pb-4 border-b border-slate-800">
                             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
                                 <PieChartIcon class="w-4 h-4 text-cyan-400" />
@@ -504,7 +504,7 @@ watch(() => props.analytics, (newVal) => {
 
                     <!-- Right 2 Cols: Group Cards Breakdown -->
                     <div class="lg:col-span-2 space-y-4">
-                        <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-4">
+                        <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
                             <h3 class="text-sm font-extrabold text-white pb-3 border-b border-slate-800">
                                 Detalhamento por Grupo de Gasto
                             </h3>
@@ -550,7 +550,7 @@ watch(() => props.analytics, (newVal) => {
             <!-- ABA 4: Vilões do Orçamento (Vazamentos & Drenos) -->
             <!-- ========================================== -->
             <div v-show="activeTab === 'villains'" class="space-y-6 animate-in fade-in duration-200">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-4">
+                <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800 gap-2">
                         <div>
                             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
@@ -673,8 +673,8 @@ watch(() => props.analytics, (newVal) => {
                 </div>
 
                 <!-- Empty State (No Scans) -->
-                <div v-if="!analytics.basket_analytics || analytics.basket_analytics.total_scans === 0" class="glass-panel p-10 rounded-3xl border border-slate-800 text-center space-y-4">
-                    <div class="w-16 h-16 rounded-3xl bg-slate-800/80 text-slate-500 border border-slate-700 mx-auto flex items-center justify-center">
+                <div v-if="!analytics.basket_analytics || analytics.basket_analytics.total_scans === 0" class="glass-panel p-10 rounded-2xl border border-slate-800 text-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-800/80 text-slate-500 border border-slate-700 mx-auto flex items-center justify-center">
                         <ShoppingBag class="w-8 h-8" />
                     </div>
                     <div class="max-w-md mx-auto space-y-2">
@@ -697,7 +697,7 @@ watch(() => props.analytics, (newVal) => {
                 <!-- Content when scans exist -->
                 <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <!-- Col 1: Top 10 Produtos Mais Gastos (7 cols) -->
-                    <div class="lg:col-span-7 glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
+                    <div class="lg:col-span-7 glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
                         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
                             <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
@@ -758,7 +758,7 @@ watch(() => props.analytics, (newVal) => {
                     </div>
 
                     <!-- Col 2: Distribuição por Categoria da Cesta (5 cols) -->
-                    <div class="lg:col-span-5 glass-panel p-6 rounded-3xl border border-slate-800 space-y-5 flex flex-col justify-between">
+                    <div class="lg:col-span-5 glass-panel p-6 rounded-2xl border border-slate-800 space-y-5 flex flex-col justify-between">
                         <div class="space-y-4">
                             <div class="pb-3 border-b border-slate-800">
                                 <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
@@ -818,7 +818,7 @@ watch(() => props.analytics, (newVal) => {
             <!-- ABA 6: Guia do DeixaSobrar (Didático Embutido) -->
             <!-- ========================================== -->
             <div v-show="activeTab === 'guide'" class="space-y-6 animate-in fade-in duration-200">
-                <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
+                <div class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
                     <div class="flex items-center justify-between pb-4 border-b border-slate-800">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center">

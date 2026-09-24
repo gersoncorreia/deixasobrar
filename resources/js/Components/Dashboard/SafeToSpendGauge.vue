@@ -17,7 +17,7 @@ const { isPrivate, maskValue } = usePrivacyMode();
 </script>
 
 <template>
-    <div class="glass-panel rounded-[28px] sm:rounded-3xl p-5 sm:p-8 border border-slate-800/90 relative overflow-hidden bg-gradient-to-b from-slate-900/90 via-slate-900/70 to-slate-950/90 shadow-2xl">
+    <div class="glass-panel rounded-2xl p-5 sm:p-7 border border-slate-800/90 relative overflow-hidden bg-gradient-to-b from-slate-900/90 via-slate-900/70 to-slate-950/90 shadow-2xl">
         <!-- Ambient Glow -->
         <div class="absolute -right-10 -top-10 w-56 h-56 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute -left-10 -bottom-10 w-44 h-44 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -96,7 +96,7 @@ const { isPrivate, maskValue } = usePrivacyMode();
 
         <!-- Metrics Breakdown Grid -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-800/80">
-            <div class="p-2 sm:p-0 rounded-2xl bg-slate-950/30 sm:bg-transparent">
+            <div class="p-2 sm:p-0 rounded-xl bg-slate-950/30 sm:bg-transparent">
                 <span class="text-[11px] text-slate-400 block mb-0.5">Saldo em Contas</span>
                 <span class="text-sm sm:text-base font-bold text-white font-display">
                     {{ maskValue(formatCurrency(safeToSpend.current_balance)) }}
@@ -105,7 +105,7 @@ const { isPrivate, maskValue } = usePrivacyMode();
 
             <div 
                 @click="$emit('open-fixed-bills')"
-                class="cursor-pointer group p-2 sm:p-1.5 sm:-m-1.5 rounded-2xl bg-slate-950/30 sm:bg-transparent hover:bg-slate-800/60 transition-all"
+                class="cursor-pointer group p-2 sm:p-1.5 sm:-m-1.5 rounded-xl bg-slate-950/30 sm:bg-transparent hover:bg-slate-800/60 transition-all"
                 title="Clique para gerenciar suas contas fixas blindadas"
             >
                 <span class="text-[11px] text-slate-400 group-hover:text-rose-300 flex items-center gap-1 mb-0.5">
@@ -120,14 +120,14 @@ const { isPrivate, maskValue } = usePrivacyMode();
                 </span>
             </div>
 
-            <div class="p-2 sm:p-0 rounded-2xl bg-slate-950/30 sm:bg-transparent">
+            <div class="p-2 sm:p-0 rounded-xl bg-slate-950/30 sm:bg-transparent">
                 <span class="text-[11px] text-slate-400 block mb-0.5">Dinheiro Livre Real</span>
                 <span class="text-sm sm:text-base font-bold text-emerald-400 font-display">
                     {{ maskValue(formatCurrency(safeToSpend.available_capital)) }}
                 </span>
             </div>
 
-            <div class="p-2 sm:p-0 rounded-2xl bg-slate-950/30 sm:bg-transparent">
+            <div class="p-2 sm:p-0 rounded-xl bg-slate-950/30 sm:bg-transparent">
                 <span class="text-[11px] text-slate-400 block mb-0.5">Ciclo Salarial</span>
                 <span class="text-sm sm:text-base font-bold text-teal-300 font-display">
                     {{ safeToSpend.days_remaining }} dias (dia {{ safeToSpend.next_payday_day }})

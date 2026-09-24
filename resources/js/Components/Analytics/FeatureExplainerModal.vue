@@ -88,7 +88,7 @@ const features = [
 
 <template>
     <div v-if="isOpen" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-        <div class="glass-panel w-full max-w-4xl rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col my-auto max-h-[90vh]">
+        <div class="glass-panel w-full max-w-4xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl relative overflow-hidden flex flex-col my-auto max-h-[90vh]">
             
             <!-- Header -->
             <div class="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/60 sticky top-0 z-10 backdrop-blur-md">
