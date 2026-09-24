@@ -20,6 +20,7 @@ import {
     Sparkles
 } from 'lucide-vue-next';
 import { usePrivacyMode } from '@/Composables/usePrivacyMode';
+import { useMobileMenu } from '@/Composables/useMobileMenu';
 import MobileMenuDrawer from '@/Components/Mobile/MobileMenuDrawer.vue';
 
 defineProps({
@@ -35,11 +36,7 @@ defineProps({
 
 const page = usePage();
 const { isPrivate, togglePrivacy } = usePrivacyMode();
-const isMobileMenuOpen = ref(false);
-
-provide('openMobileMenu', () => {
-    isMobileMenuOpen.value = true;
-});
+const { isMobileMenuOpen, openMobileMenu, closeMobileMenu } = useMobileMenu();
 
 const navItems = [
     { name: 'Visão Geral', href: '/dashboard', icon: LayoutDashboard },

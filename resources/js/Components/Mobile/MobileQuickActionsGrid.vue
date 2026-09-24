@@ -10,8 +10,21 @@ import {
     Sparkles,
     MoreHorizontal
 } from 'lucide-vue-next';
+import { useMobileMenu } from '@/Composables/useMobileMenu';
 
-defineEmits(['open-menu', 'open-fixed-bills', 'open-simulator']);
+const emit = defineEmits(['open-menu', 'open-fixed-bills', 'open-simulator']);
+const { openMobileMenu } = useMobileMenu();
+
+const handleAction = (item) => {
+    if (item.action === 'menu') {
+        openMobileMenu();
+        emit('open-menu');
+    } else if (item.action === 'fixed-bills') {
+        emit('open-fixed-bills');
+    } else if (item.action === 'simulator') {
+        emit('open-simulator');
+    }
+};
 
 const actions = [
     { label: 'Extratos', href: '/extratos', icon: FileUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
@@ -50,11 +63,7 @@ const actions = [
                 <button
                     v-else
                     type="button"
-                    @click="
-                        item.action === 'menu' ? $emit('open-menu') :
-                        item.action === 'fixed-bills' ? $emit('open-fixed-bills') :
-                        item.action === 'simulator' ? $emit('open-simulator') : null
-                    "
+                    @click="handleAction(item)"
                     class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-slate-950/40 hover:bg-slate-800/60 border border-slate-800/60 active:scale-95 transition-all text-center group"
                 >
                     <div 

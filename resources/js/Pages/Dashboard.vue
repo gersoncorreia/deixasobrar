@@ -34,9 +34,6 @@ const props = defineProps({
     flash: Object,
 });
 
-// Injected drawer opener from AppLayout
-const openMobileMenu = inject('openMobileMenu', () => {});
-
 // Active Tab State ('overview' | 'simulator' | 'import')
 const activeTab = ref('overview');
 
