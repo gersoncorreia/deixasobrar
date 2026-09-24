@@ -37,15 +37,41 @@ const transactionList = computed(() => {
 
 const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    try {
+        let date;
+        if (typeof dateStr === 'string') {
+            const cleanStr = dateStr.trim();
+            // Match DD/MM/YYYY or DD-MM-YYYY
+            if (/^\d{2}[\/\-]\d{2}[\/\-]\d{4}/.test(cleanStr)) {
+                const parts = cleanStr.substring(0, 10).split(/[\/\-]/);
+                date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+            } else if (/^\d{4}-\d{2}-\d{2}/.test(cleanStr)) {
+                date = new Date(cleanStr.substring(0, 10) + 'T00:00:00');
+            } else {
+                date = new Date(cleanStr);
+            }
+        } else {
+            date = new Date(dateStr);
+        }
 
-    const diffDays = Math.round((today - date) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'Hoje';
-    if (diffDays === 1) return 'Ontem';
+        if (isNaN(date.getTime())) {
+            return String(dateStr).substring(0, 10);
+        }
 
-    return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const checkDate = new Date(date);
+        checkDate.setHours(0, 0, 0, 0);
+
+        const diffDays = Math.round((today - checkDate) / (1000 * 60 * 60 * 24));
+        if (diffDays === 0) return 'Hoje';
+        if (diffDays === 1) return 'Ontem';
+
+        return new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(date);
+    } catch {
+        return String(dateStr || '').substring(0, 10);
+    }
 };
 </script>
 

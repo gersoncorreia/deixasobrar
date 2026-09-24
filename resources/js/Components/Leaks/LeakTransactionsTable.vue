@@ -80,6 +80,25 @@ const formatMonthLabel = (mStr) => {
     const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     return `${months[parseInt(month, 10) - 1]} / ${year}`;
 };
+
+const safeFormatDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+        const cleanStr = String(dateStr).trim();
+        if (/^\d{2}[\/\-]\d{2}[\/\-]\d{4}/.test(cleanStr)) {
+            const parts = cleanStr.substring(0, 10).split(/[\/\-]/);
+            return `${parts[0]}/${parts[1]}/${parts[2]}`;
+        }
+        if (/^\d{4}-\d{2}-\d{2}/.test(cleanStr)) {
+            const parts = cleanStr.substring(0, 10).split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        const d = new Date(cleanStr);
+        return isNaN(d.getTime()) ? cleanStr : d.toLocaleDateString('pt-BR');
+    } catch {
+        return String(dateStr);
+    }
+};
 </script>
 
 <template>
@@ -195,7 +214,7 @@ const formatMonthLabel = (mStr) => {
                         class="hover:bg-slate-900/40 transition-colors"
                     >
                         <td class="py-4 px-4 text-slate-400 font-mono text-[11px] whitespace-nowrap">
-                            {{ new Date(trx.transaction_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) }}
+                            {{ safeFormatDate(trx.transaction_date) }}
                         </td>
                         <td class="py-4 px-4 font-semibold text-white">
                             <span class="block truncate max-w-md" :title="trx.description">
