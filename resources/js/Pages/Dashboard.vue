@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import SafeToSpendGauge from '@/Components/Dashboard/SafeToSpendGauge.vue';
@@ -8,6 +8,9 @@ import AccountsQuickList from '@/Components/Dashboard/AccountsQuickList.vue';
 import StatementDropzone from '@/Components/Dashboard/StatementDropzone.vue';
 import PurchaseSimulatorCard from '@/Components/Dashboard/PurchaseSimulatorCard.vue';
 import UpcomingBillsTimeline from '@/Components/Dashboard/UpcomingBillsTimeline.vue';
+import MobileQuickActionsGrid from '@/Components/Mobile/MobileQuickActionsGrid.vue';
+import SmartContextualBanner from '@/Components/Dashboard/SmartContextualBanner.vue';
+import RecentActivitiesFeed from '@/Components/Dashboard/RecentActivitiesFeed.vue';
 import TransactionModal from '@/Components/Financial/TransactionModal.vue';
 import PreferencesModal from '@/Components/Financial/PreferencesModal.vue';
 import FixedBillsModal from '@/Components/Financial/FixedBillsModal.vue';
@@ -30,6 +33,9 @@ const props = defineProps({
     upcomingBills: Array,
     flash: Object,
 });
+
+// Injected drawer opener from AppLayout
+const openMobileMenu = inject('openMobileMenu', () => {});
 
 // Active Tab State ('overview' | 'simulator' | 'import')
 const activeTab = ref('overview');
@@ -60,13 +66,13 @@ const handleStatementUploaded = () => {
     <Head title="Painel Financeiro" />
 
     <AppLayout :user="user">
-        <div class="space-y-6 pb-16">
+        <div class="space-y-6 pb-20 md:pb-12">
             
             <!-- PWA Mobile Install Banner -->
             <PwaInstallPrompt />
 
-            <!-- Top Welcome Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <!-- Desktop Welcome Header (Hidden on Mobile since Mobile Topbar has it) -->
+            <div class="hidden md:flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                         Olá, {{ user.name.split(' ')[0] }} 👋
@@ -77,7 +83,16 @@ const handleStatementUploaded = () => {
                 </div>
             </div>
 
-            <!-- Tab Selector Bar -->
+            <!-- Mobile Quick Actions Grid (Inspirado no Banco do Brasil - 4x2 Squircle Buttons) -->
+            <div class="md:hidden">
+                <MobileQuickActionsGrid 
+                    @open-menu="openMobileMenu"
+                    @open-fixed-bills="isFixedBillsModalOpen = true"
+                    @open-simulator="switchTab('simulator')"
+                />
+            </div>
+
+            <!-- Tab Selector Bar (Desktop & Secondary Navigation) -->
             <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md overflow-x-auto scrollbar-none">
                 <button
                     @click="switchTab('overview')"
@@ -87,7 +102,7 @@ const handleStatementUploaded = () => {
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'"
                 >
                     <LayoutDashboard class="w-4 h-4" />
-                    <span>Visão Rápida</span>
+                    <span>Visão Geral</span>
                 </button>
 
                 <button
@@ -121,15 +136,29 @@ const handleStatementUploaded = () => {
 
             <!-- Tab Content Panels -->
             <div>
-                <!-- ABA 1: Visão Rápida -->
+                <!-- ABA 1: Visão Geral -->
                 <div v-show="activeTab === 'overview'" class="space-y-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                         <!-- Safe to Spend Gauge (8 cols) -->
-                        <div class="lg:col-span-8">
+                        <div class="lg:col-span-8 space-y-6">
                             <SafeToSpendGauge 
                                 :safe-to-spend="safeToSpend"
                                 @open-fixed-bills="isFixedBillsModalOpen = true"
                                 @open-preferences="isPreferencesModalOpen = true"
+                                @open-simulator="switchTab('simulator')"
+                            />
+
+                            <!-- Smart Contextual Banner (Alertas & Dicas) -->
+                            <SmartContextualBanner 
+                                :upcoming-bills="upcomingBills"
+                                :safe-to-spend="safeToSpend"
+                                @open-fixed-bills="isFixedBillsModalOpen = true"
+                                @open-simulator="switchTab('simulator')"
+                            />
+
+                            <!-- Atividades Recentes / Timeline (Estilo App BB) -->
+                            <RecentActivitiesFeed 
+                                :transactions="transactions" 
                             />
                         </div>
 

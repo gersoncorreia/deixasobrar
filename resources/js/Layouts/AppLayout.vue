@@ -1,4 +1,5 @@
 <script setup>
+import { ref, provide } from 'vue';
 import { usePage, Link, router } from '@inertiajs/vue3';
 import { 
     LayoutDashboard, 
@@ -11,8 +12,15 @@ import {
     TrendingUp,
     Camera,
     CreditCard,
-    PieChart
+    PieChart,
+    Eye,
+    EyeOff,
+    Menu,
+    SlidersHorizontal,
+    Sparkles
 } from 'lucide-vue-next';
+import { usePrivacyMode } from '@/Composables/usePrivacyMode';
+import MobileMenuDrawer from '@/Components/Mobile/MobileMenuDrawer.vue';
 
 defineProps({
     title: {
@@ -26,6 +34,12 @@ defineProps({
 });
 
 const page = usePage();
+const { isPrivate, togglePrivacy } = usePrivacyMode();
+const isMobileMenuOpen = ref(false);
+
+provide('openMobileMenu', () => {
+    isMobileMenuOpen.value = true;
+});
 
 const navItems = [
     { name: 'Visão Geral', href: '/dashboard', icon: LayoutDashboard },
@@ -56,7 +70,7 @@ const logout = () => {
             <div>
                 <!-- Brand -->
                 <Link href="/dashboard" class="flex items-center gap-3 mb-8">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-0.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-0.5 shadow-md shadow-emerald-500/20">
                         <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
                             <TrendingUp class="w-5 h-5 text-emerald-400" />
                         </div>
@@ -88,7 +102,7 @@ const logout = () => {
                 <div v-if="page.props.auth?.user?.is_admin" class="px-1">
                     <Link 
                         href="/admin/dashboard" 
-                        class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:text-white text-xs font-bold transition-all"
+                        class="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 hover:bg-purple-500/25 hover:text-white text-xs font-bold transition-all shadow-sm"
                     >
                         <span>Painel Master Admin ⚡</span>
                     </Link>
@@ -110,20 +124,57 @@ const logout = () => {
             </div>
         </aside>
 
-        <!-- Mobile Topbar -->
-        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800 pt-safe sticky top-0 z-40">
-            <Link href="/dashboard" class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-xs">
-                    DS
-                </div>
-                <span class="text-base font-extrabold text-white">Deixa<span class="text-emerald-400">Sobrar</span></span>
-            </Link>
-            <div class="flex items-center gap-2">
+        <!-- Mobile Topbar (Padrão Banco do Brasil: Avatar, Saudação, Olho de Privacidade, Menu) -->
+        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800/80 pt-safe sticky top-0 z-40 backdrop-blur-xl shadow-sm">
+            <div class="flex items-center gap-3">
+                <!-- User Avatar Button (Abre Gaveta de Perfil/Menu) -->
                 <button 
-                    @click="logout"
-                    class="text-xs font-semibold text-slate-400 hover:text-rose-400 px-2 py-1"
+                    @click="isMobileMenuOpen = true"
+                    class="relative w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-transform"
                 >
-                    Sair
+                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-black text-emerald-400 text-xs">
+                        {{ user.name?.charAt(0) || 'U' }}
+                    </div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900"></span>
+                </button>
+
+                <!-- Greeting / Context -->
+                <div @click="isMobileMenuOpen = true" class="cursor-pointer">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-extrabold text-white leading-none">
+                            Olá, {{ user.name?.split(' ')[0] || 'Usuário' }}
+                        </span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            PRO
+                        </span>
+                    </div>
+                    <span class="text-[10px] text-slate-400 font-medium block mt-0.5">
+                        DeixaSobrar • Gestão Ativa
+                    </span>
+                </div>
+            </div>
+
+            <!-- Topbar Actions: Privacy Eye & Drawer Trigger -->
+            <div class="flex items-center gap-1.5">
+                <!-- Privacy Mode Button (Olho de Privacidade) -->
+                <button 
+                    @click="togglePrivacy" 
+                    type="button"
+                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700/70 active:scale-95 transition-all shadow-sm"
+                    :title="isPrivate ? 'Mostrar valores monetários' : 'Ocultar valores monetários'"
+                >
+                    <EyeOff v-if="isPrivate" class="w-4 h-4 text-emerald-400" />
+                    <Eye v-else class="w-4 h-4 text-slate-300" />
+                </button>
+
+                <!-- Full Menu Trigger -->
+                <button 
+                    @click="isMobileMenuOpen = true"
+                    type="button"
+                    class="p-2 rounded-xl text-slate-300 hover:text-white bg-slate-800/70 border border-slate-700/70 active:scale-95 transition-all shadow-sm"
+                    title="Menu de Módulos"
+                >
+                    <Menu class="w-4 h-4" />
                 </button>
             </div>
         </header>
@@ -147,66 +198,90 @@ const logout = () => {
                 </a>
             </div>
 
-            <main class="flex-1 px-4 sm:px-8 lg:px-10 py-6 sm:py-8 w-full max-w-[1700px] mx-auto">
+            <main class="flex-1 px-4 sm:px-8 lg:px-10 py-5 sm:py-8 w-full max-w-[1700px] mx-auto">
                 <slot />
             </main>
         </div>
 
-        <!-- Mobile PWA Bottom Navigation Bar (Otimizada & Ergonômica) -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex items-center justify-around pb-safe shadow-[0_-10px_25px_rgba(0,0,0,0.5)]">
-            <!-- 1. Visão Geral -->
+        <!-- Mobile PWA Bottom Navigation Bar (Dock Ergonômico de 5 botões) -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex items-center justify-around pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.6)]">
+            <!-- 1. Visão Geral / Início -->
             <Link 
                 href="/dashboard" 
-                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/dashboard') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
-                <LayoutDashboard class="w-4 h-4" />
+                <div 
+                    class="p-1 rounded-xl transition-all"
+                    :class="isActive('/dashboard') ? 'bg-emerald-500/15' : ''"
+                >
+                    <LayoutDashboard class="w-4 h-4" />
+                </div>
                 <span>Início</span>
             </Link>
 
-            <!-- 2. Lançamentos -->
+            <!-- 2. Extrato / Lançamentos -->
             <Link 
                 href="/transacoes" 
-                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/transacoes') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
-                <ArrowLeftRight class="w-4 h-4" />
+                <div 
+                    class="p-1 rounded-xl transition-all"
+                    :class="isActive('/transacoes') ? 'bg-emerald-500/15' : ''"
+                >
+                    <ArrowLeftRight class="w-4 h-4" />
+                </div>
                 <span>Extrato</span>
             </Link>
 
-            <!-- 3. Scanner OCR (Botão Central em Destaque) -->
+            <!-- 3. Scanner OCR (Botão Central em Destaque Fluorescente) -->
             <Link 
                 href="/scanner" 
                 class="flex flex-col items-center -mt-5 group"
             >
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/30 group-active:scale-95 transition-transform">
-                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center group-hover:bg-transparent transition-colors">
-                        <Camera class="w-5 h-5 text-emerald-400 group-hover:text-slate-950 transition-colors" />
+                <div class="w-13 h-13 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/35 group-active:scale-90 transition-transform">
+                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center group-hover:bg-transparent transition-colors p-2.5">
+                        <Camera class="w-6 h-6 text-emerald-400 group-hover:text-slate-950 transition-colors" />
                     </div>
                 </div>
                 <span class="text-[9px] font-extrabold text-emerald-400 mt-1">Scanner</span>
             </Link>
 
-            <!-- 4. Vazamentos -->
+            <!-- 4. Análises & Gráficos (Agora com acesso direto no Dock!) -->
             <Link 
-                href="/vazamentos" 
-                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors"
-                :class="isActive('/vazamentos') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
+                href="/analises" 
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold transition-all active:scale-95"
+                :class="isActive('/analises') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
-                <Flame class="w-4 h-4" />
-                <span>Raio-X</span>
+                <div 
+                    class="p-1 rounded-xl transition-all"
+                    :class="isActive('/analises') ? 'bg-emerald-500/15' : ''"
+                >
+                    <PieChart class="w-4 h-4" />
+                </div>
+                <span>Análises</span>
             </Link>
 
-            <!-- 5. Blindagem / Mais -->
-            <Link 
-                href="/blindagem" 
-                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-colors"
-                :class="isActive('/blindagem') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
+            <!-- 5. Menu Completo (Abre Drawer com todos os links da Sidebar) -->
+            <button 
+                type="button"
+                @click="isMobileMenuOpen = true"
+                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-2xl text-[10px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
             >
-                <ShieldCheck class="w-4 h-4" />
-                <span>Blindar</span>
-            </Link>
+                <div class="p-1 rounded-xl hover:bg-slate-800/60">
+                    <SlidersHorizontal class="w-4 h-4" />
+                </div>
+                <span>Menu</span>
+            </button>
         </nav>
+
+        <!-- Mobile Full Menu Drawer Teleport -->
+        <MobileMenuDrawer 
+            :is-open="isMobileMenuOpen" 
+            :user="user" 
+            @close="isMobileMenuOpen = false" 
+        />
 
     </div>
 </template>
