@@ -125,7 +125,7 @@ const logout = () => {
         </aside>
 
         <!-- Mobile Topbar (Padrão Banco do Brasil: Avatar, Saudação, Olho de Privacidade, Menu) -->
-        <header class="md:hidden flex items-center justify-between px-5 pt-4 pb-3.5 bg-slate-900/95 border-b border-slate-800/80 pt-safe sticky top-0 z-40 backdrop-blur-xl shadow-sm">
+        <header class="md:hidden flex items-center justify-between px-5 pt-7 pb-4 bg-slate-900/95 border-b border-slate-800/80 pt-safe sticky top-0 z-40 backdrop-blur-xl shadow-sm">
             <div class="flex items-center gap-3">
                 <!-- User Avatar Button (Abre Gaveta de Perfil/Menu) -->
                 <button 
