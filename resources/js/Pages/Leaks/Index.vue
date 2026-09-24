@@ -28,6 +28,24 @@ const handleCategoryFilter = (categoryId) => {
         category_id: categoryId || undefined 
     }, { preserveState: true, preserveScroll: true });
 };
+
+const formatMonthLabel = (mStr) => {
+    if (!mStr) return '';
+    if (mStr === 'all') return 'Todo o Período';
+    const [year, month] = mStr.split('-');
+    const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return `${months[parseInt(month, 10) - 1]} / ${year}`;
+};
+
+const handleMonthChange = (e) => {
+    const selected = e.target.value;
+    router.get('/vazamentos', {
+        ...props.filters,
+        month: selected,
+        start_date: undefined,
+        end_date: undefined,
+    }, { preserveState: true, preserveScroll: true });
+};
 </script>
 
 <template>
@@ -35,17 +53,41 @@ const handleCategoryFilter = (categoryId) => {
 
     <AppLayout title="Raio-X de Vazamentos">
         <div class="space-y-8 pb-16">
-            <!-- Header -->
-            <div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                    Raio-X de Vazamentos & Economia 🎯
-                </h1>
-                <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                    Identifique e estanque as micro-saídas invisíveis que drenam o seu teto diário seguro.
-                </p>
+            <!-- Header with Title and Period Picker -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                        Raio-X de Vazamentos & Economia 🎯
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                        Identifique e estanque as micro-saídas invisíveis que drenam o seu teto diário seguro.
+                    </p>
+                </div>
+
+                <!-- Global Period Selector -->
+                <div class="flex items-center gap-2 self-start md:self-auto p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-lg backdrop-blur-md">
+                    <span class="text-xs font-bold text-slate-400 px-2 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Período:
+                    </span>
+                    <select
+                        :value="filters.month || summary.selectedMonth"
+                        @change="handleMonthChange"
+                        class="bg-slate-950 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-semibold text-white focus:outline-none focus:border-amber-400 cursor-pointer"
+                    >
+                        <option 
+                            v-for="m in availableMonths" 
+                            :key="m" 
+                            :value="m"
+                        >
+                            {{ formatMonthLabel(m) }}
+                        </option>
+                        <option value="all">🌐 Todo o Histórico (Geral)</option>
+                    </select>
+                </div>
             </div>
 
-            <!-- 1. Visão Geral das Métricas de Impacto (Sempre visível no topo) -->
+            <!-- 1. Visão Geral das Métricas de Impacto (Sempre visível no topo, contextual ao período) -->
             <LeakMetricsOverview :summary="summary" />
 
             <!-- 2. Abas de Navegação (Tabs) -->

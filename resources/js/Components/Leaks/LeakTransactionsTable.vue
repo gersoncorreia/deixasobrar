@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed } from 'vue';
+import { reactive, computed, watch } from 'vue';
 import { router, Link } from '@inertiajs/vue3';
 import { useCurrencyFormat } from '@/Composables/useCurrencyFormat';
 import { Flame, CheckCircle, ChevronLeft, ChevronRight, Filter, Calendar, X, RotateCcw, ShieldAlert } from 'lucide-vue-next';
@@ -34,10 +34,17 @@ const filterForm = reactive({
     end_date: props.filters.end_date || '',
 });
 
+watch(() => props.filters, (newFilters) => {
+    filterForm.status = newFilters.status || 'active';
+    filterForm.category_id = newFilters.category_id || '';
+    filterForm.month = newFilters.month || '';
+    filterForm.start_date = newFilters.start_date || '';
+    filterForm.end_date = newFilters.end_date || '';
+}, { deep: true });
+
 const hasActiveFilters = computed(() => {
     return Boolean(
         filterForm.category_id || 
-        filterForm.month || 
         filterForm.start_date || 
         filterForm.end_date || 
         (filterForm.status && filterForm.status !== 'active')
@@ -57,7 +64,6 @@ const applyFilters = () => {
 const resetFilters = () => {
     filterForm.status = 'active';
     filterForm.category_id = '';
-    filterForm.month = '';
     filterForm.start_date = '';
     filterForm.end_date = '';
     applyFilters();

@@ -29,11 +29,62 @@ class LeakRadarController extends Controller
         $safetyReserve = (float) ($user->safety_reserve ?? 200.00);
         $safeToSpend = $this->calculateSafeToSpend->execute($user, paydayDay: $paydayDay, safetyReserve: $safetyReserve);
 
-        // 2. Base leaks query with filters
+        // 2. Determine Available Months (Cross-database compatible)
+        $driver = DB::connection()->getDriverName();
+        $monthExpr = $driver === 'sqlite' 
+            ? "strftime('%Y-%m', transaction_date)" 
+            : "DATE_FORMAT(transaction_date, '%Y-%m')";
+
+        $availableMonths = $user->transactions()
+            ->selectRaw("DISTINCT {$monthExpr} as month")
+            ->orderBy('month', 'desc')
+            ->pluck('month')
+            ->filter()
+            ->values()
+            ->toArray();
+
+        $currentMonthStr = Carbon::now()->format('Y-m');
+        if (!in_array($currentMonthStr, $availableMonths)) {
+            array_unshift($availableMonths, $currentMonthStr);
+        }
+
+        // 3. Period Filter Determination (Default to current month if no period filter specified)
+        $hasCustomRange = $request->filled('start_date') || $request->filled('end_date');
+        $rawMonthInput = $request->input('month');
+
+        if ($request->has('month') && $rawMonthInput === 'all') {
+            $selectedMonth = 'all';
+        } elseif ($rawMonthInput) {
+            $selectedMonth = $rawMonthInput;
+        } elseif (!$hasCustomRange) {
+            $selectedMonth = $currentMonthStr;
+        } else {
+            $selectedMonth = '';
+        }
+
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        // Helper closure to apply period filters to any transaction query
+        $applyPeriod = function ($query) use ($selectedMonth, $startDate, $endDate) {
+            if ($selectedMonth && $selectedMonth !== 'all') {
+                $query->where('transaction_date', 'like', "{$selectedMonth}%");
+            }
+            if ($startDate) {
+                $query->where('transaction_date', '>=', $startDate);
+            }
+            if ($endDate) {
+                $query->where('transaction_date', '<=', $endDate);
+            }
+        };
+
+        // 4. Base leaks query for listing
         $leaksQuery = $user->transactions()
             ->with(['category', 'account'])
             ->orderBy('transaction_date', 'desc')
             ->orderBy('id', 'desc');
+
+        $applyPeriod($leaksQuery);
 
         // Status filter: 'active' (default leaks), 'inactive' (non-leaks), 'all' (everything)
         $status = $request->input('status', 'active');
@@ -49,25 +100,19 @@ class LeakRadarController extends Controller
             $leaksQuery->where('category_id', $categoryId);
         }
 
-        // Date Range filters
-        if ($startDate = $request->input('start_date')) {
-            $leaksQuery->where('transaction_date', '>=', $startDate);
-        }
-        if ($endDate = $request->input('end_date')) {
-            $leaksQuery->where('transaction_date', '<=', $endDate);
-        }
+        // 5. Calculate Metrics for the Selected Period
+        $periodLeaksQuery = $user->transactions()->where('is_leak', true);
+        $applyPeriod($periodLeaksQuery);
 
-        // Month filter
-        if ($month = $request->input('month')) {
-            $leaksQuery->where('transaction_date', 'like', "{$month}%");
-        }
+        $totalLeaksAmount = abs((float) (clone $periodLeaksQuery)->sum('amount'));
+        $totalLeaksCount = (int) (clone $periodLeaksQuery)->count();
 
-        $totalLeaksAmount = abs((float) $user->transactions()->where('is_leak', true)->sum('amount'));
-        $totalLeaksCount = (int) $user->transactions()->where('is_leak', true)->count();
+        // 6. Breakdown by category for the Selected Period
+        $breakdownQuery = $user->transactions()
+            ->where('is_leak', true);
+        $applyPeriod($breakdownQuery);
 
-        // 3. Breakdown by category
-        $categoriesBreakdown = $user->transactions()
-            ->where('is_leak', true)
+        $categoriesBreakdown = $breakdownQuery
             ->select('category_id', DB::raw('SUM(ABS(amount)) as total_amount'), DB::raw('COUNT(*) as count'))
             ->groupBy('category_id')
             ->with('category')
@@ -91,24 +136,10 @@ class LeakRadarController extends Controller
             ->sortByDesc('total_amount')
             ->values();
 
-        // 4. Paginated transactions (10 por página conforme solicitado)
+        // 7. Paginated transactions
         $transactions = $leaksQuery->paginate(10)->withQueryString();
 
-        // 5. Available months
-        $driver = DB::connection()->getDriverName();
-        $monthExpr = $driver === 'sqlite' 
-            ? "strftime('%Y-%m', transaction_date)" 
-            : "DATE_FORMAT(transaction_date, '%Y-%m')";
-
-        $availableMonths = $user->transactions()
-            ->where('is_leak', true)
-            ->selectRaw("DISTINCT {$monthExpr} as month")
-            ->orderBy('month', 'desc')
-            ->pluck('month')
-            ->filter()
-            ->values();
-
-        // 6. User categories
+        // 8. User categories
         $categories = Category::forUser($user->id)->orderBy('name')->get();
 
         return Inertia::render('Leaks/Index', [
@@ -120,12 +151,19 @@ class LeakRadarController extends Controller
                 'dailyImpact' => ($safeToSpend['days_remaining'] ?? 1) > 0 
                     ? round($totalLeaksAmount / ($safeToSpend['days_remaining'] ?? 1), 2)
                     : 0,
+                'selectedMonth' => $selectedMonth,
             ],
             'categoriesBreakdown' => $categoriesBreakdown,
             'categories' => $categories,
             'transactions' => $transactions,
             'availableMonths' => $availableMonths,
-            'filters' => $request->only(['category_id', 'month', 'start_date', 'end_date', 'status']),
+            'filters' => [
+                'category_id' => $request->input('category_id', ''),
+                'month' => $selectedMonth,
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
+                'status' => $status,
+            ],
         ]);
     }
 }

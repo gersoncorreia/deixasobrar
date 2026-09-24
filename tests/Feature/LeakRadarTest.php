@@ -139,18 +139,18 @@ class LeakRadarTest extends TestCase
             'is_leak' => false,
         ]);
 
-        // 1. Filter by category
-        $this->actingAs($user)->get("/vazamentos?category_id={$cat1->id}")
+        // 1. Filter by category (passes month=all to search across all dates)
+        $this->actingAs($user)->get("/vazamentos?category_id={$cat1->id}&month=all")
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 1));
 
         // 2. Filter by status: inactive
-        $this->actingAs($user)->get('/vazamentos?status=inactive')
+        $this->actingAs($user)->get('/vazamentos?status=inactive&month=all')
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 1));
 
         // 3. Filter by status: all
-        $this->actingAs($user)->get('/vazamentos?status=all')
+        $this->actingAs($user)->get('/vazamentos?status=all&month=all')
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 2));
 
@@ -158,5 +158,10 @@ class LeakRadarTest extends TestCase
         $this->actingAs($user)->get('/vazamentos?status=all&start_date=2026-05-11&end_date=2026-05-15')
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 1));
+
+        // 5. Filter by specific month
+        $this->actingAs($user)->get('/vazamentos?status=all&month=2026-05')
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page->has('transactions.data', 2));
     }
 }
