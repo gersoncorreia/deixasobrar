@@ -18,7 +18,8 @@ import PwaInstallPrompt from '@/Components/PwaInstallPrompt.vue';
 import { 
     LayoutDashboard, 
     Sparkles, 
-    UploadCloud 
+    UploadCloud,
+    Settings
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -77,6 +78,18 @@ const handleStatementUploaded = () => {
                     <p class="text-xs sm:text-sm text-slate-400 mt-1">
                         Veja quanto você tem livre para gastar hoje sem faltar dinheiro no fim do mês.
                     </p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <button 
+                        @click="isPreferencesModalOpen = true"
+                        type="button"
+                        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-300 bg-slate-900/80 border border-slate-700 hover:border-slate-600 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
+                        title="Configurar ciclo e opções de limpeza/zerar dados"
+                    >
+                        <Settings class="w-4 h-4 text-slate-400 group-hover:text-emerald-400 group-hover:rotate-45 transition-all" />
+                        <span>Configurações & Zerar Dados</span>
+                    </button>
                 </div>
             </div>
 
