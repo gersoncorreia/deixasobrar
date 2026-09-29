@@ -199,4 +199,83 @@ class StatementController extends Controller
             $summaryMessage
         )->with('batch_report', $responsePayload);
     }
+
+    /**
+     * Get recent statement imports for the authenticated user.
+     */
+    public function recentImports(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user() ?? User::first();
+
+        $imports = $user->statementImports()
+            ->with('account')
+            ->orderBy('id', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'file_name' => $item->file_name,
+                    'detected_bank' => $item->detected_bank ? $item->detected_bank->label() : 'Universal',
+                    'imported_records' => $item->imported_records,
+                    'skipped_records' => $item->skipped_records,
+                    'account_name' => $item->account ? $item->account->name : 'Conta Padrão',
+                    'created_at' => $item->created_at->format('d/m/Y H:i'),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'imports' => $imports,
+        ]);
+    }
+
+    /**
+     * Undo a statement import: delete its transactions and revert the account balance.
+     */
+    public function destroy(Request $request, StatementImport $statementImport): JsonResponse|RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user() ?? User::first();
+
+        if ($statementImport->user_id !== $user->id) {
+            abort(403, 'Você não tem permissão para excluir esta importação.');
+        }
+
+        $fileName = $statementImport->file_name;
+        $account = $statementImport->account;
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($statementImport, $account) {
+            // Calculate total net balance change from transactions of this import
+            $netBalance = (float) $statementImport->transactions()->sum('amount');
+
+            // Revert balance on the account
+            if ($account) {
+                $account->decrement('current_balance', $netBalance);
+            }
+
+            // Unlink any receipt scans matched with these transactions
+            $transactionIds = $statementImport->transactions()->pluck('id');
+            \App\Models\ReceiptScan::whereIn('transaction_id', $transactionIds)
+                ->update(['transaction_id' => null, 'match_status' => 'unmatched']);
+
+            // Delete transactions
+            $statementImport->transactions()->delete();
+
+            // Delete the statement import record
+            $statementImport->delete();
+        });
+
+        $msg = "A importação do arquivo '{$fileName}' foi desfeita com sucesso e o saldo da conta foi reajustado.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $msg,
+            ]);
+        }
+
+        return back()->with('success', $msg);
+    }
 }

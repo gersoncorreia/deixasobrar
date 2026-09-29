@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { useCurrencyFormat } from '@/Composables/useCurrencyFormat';
 import { 
@@ -15,7 +15,9 @@ import {
     FileText,
     Calendar,
     Wallet,
-    Sparkles
+    Sparkles,
+    Trash2,
+    RotateCcw
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -93,6 +95,7 @@ const processFiles = async (files) => {
             showBatchDetails.value = response.data.failed_files > 0;
         }
 
+        await fetchRecentImports();
         emit('uploaded', response.data);
     } catch (err) {
         isSuccess.value = false;
@@ -120,6 +123,50 @@ const reconcileBalance = async (accountId, targetBalance) => {
         isReconciling.value = false;
     }
 };
+
+// Recent Statement Imports State & Rollback
+const recentImports = ref([]);
+const isLoadingRecent = ref(false);
+const isDeletingImport = ref(null);
+
+const fetchRecentImports = async () => {
+    isLoadingRecent.value = true;
+    try {
+        const res = await window.axios.get('/extratos/recentes');
+        if (res.data?.success) {
+            recentImports.value = res.data.imports || [];
+        }
+    } catch (err) {
+        console.error('Erro ao buscar extratos recentes', err);
+    } finally {
+        isLoadingRecent.value = false;
+    }
+};
+
+const undoImport = async (item) => {
+    const confirmMsg = `Deseja realmente desfazer a importação do arquivo "${item.file_name}"?\n\nOs ${item.imported_records} lançamentos importados serão excluídos e o saldo da conta será recalculado automaticamente.`;
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    isDeletingImport.value = item.id;
+    try {
+        const res = await window.axios.delete(`/extratos/importacao/${item.id}`);
+        if (res.data?.success) {
+            await fetchRecentImports();
+            emit('uploaded');
+            router.reload({ only: ['safeToSpend', 'accounts', 'transactions', 'leaksSummary'] });
+        }
+    } catch (err) {
+        alert(err.response?.data?.message || 'Erro ao desfazer importação.');
+    } finally {
+        isDeletingImport.value = null;
+    }
+};
+
+onMounted(() => {
+    fetchRecentImports();
+});
 
 const formatDateBr = (dStr) => {
     if (!dStr) return '';
@@ -308,6 +355,58 @@ const formatDateBr = (dStr) => {
                         <AlertTriangle class="w-3 h-3" />
                         {{ detail.message || detail.error || 'Erro na leitura' }}
                     </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Histórico e Desfazer Importações Recentes -->
+        <div v-if="recentImports.length > 0" class="mt-8 pt-6 border-t border-slate-800/80">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <FileText class="w-4 h-4 text-emerald-400" />
+                    Arquivos Importados Recentemente
+                </span>
+                <span class="text-[11px] text-slate-400">
+                    Enviou o arquivo errado? Você pode desfazer a qualquer momento.
+                </span>
+            </div>
+
+            <div class="space-y-2">
+                <div 
+                    v-for="item in recentImports" 
+                    :key="item.id"
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 hover:border-slate-700/80 transition-all text-xs"
+                >
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-400">
+                            <FileText class="w-4 h-4" />
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-white truncate max-w-[220px] sm:max-w-xs" :title="item.file_name">
+                                    {{ item.file_name }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-800 text-slate-300 border border-slate-700/60">
+                                    {{ item.account_name }}
+                                </span>
+                            </div>
+                            <span class="text-[11px] text-slate-400 block mt-0.5">
+                                {{ item.imported_records }} lançamentos importados • {{ item.created_at }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <button
+                        @click="undoImport(item)"
+                        :disabled="isDeletingImport === item.id"
+                        type="button"
+                        class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 active:scale-95 transition-all self-end sm:self-auto shrink-0 disabled:opacity-50"
+                        title="Desfazer e remover os lançamentos deste arquivo"
+                    >
+                        <Loader2 v-if="isDeletingImport === item.id" class="w-3.5 h-3.5 animate-spin" />
+                        <RotateCcw v-else class="w-3.5 h-3.5 text-rose-400" />
+                        <span>Desfazer Importação</span>
+                    </button>
                 </div>
             </div>
         </div>

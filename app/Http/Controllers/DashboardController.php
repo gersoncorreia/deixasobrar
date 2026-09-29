@@ -224,4 +224,65 @@ class DashboardController extends Controller
 
         return back()->with('success', 'Configurações de ciclo de renda atualizadas com sucesso!');
     }
+
+    /**
+     * Reset user financial data (transactions, imports, receipts, balances).
+     */
+    public function resetData(Request $request): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    {
+        /** @var User $user */
+        $user = Auth::user() ?? User::first();
+
+        $validated = $request->validate([
+            'mode' => ['required', 'string', 'in:transactions_only,full_reset'],
+            'confirmation' => ['required', 'string'],
+        ]);
+
+        $conf = mb_strtoupper(trim($validated['confirmation']));
+        if (!in_array($conf, ['ZERAR', 'CONFIRMAR', 'LIMPAR'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Por favor, digite a palavra ZERAR para confirmar a limpeza dos dados.',
+            ], 422);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($user, $validated) {
+            // 1. Delete receipt scans
+            $user->receiptScans()->delete();
+
+            // 2. Delete transactions
+            $user->transactions()->delete();
+
+            // 3. Delete statement imports
+            $user->statementImports()->delete();
+
+            // 4. Reset balances
+            if ($validated['mode'] === 'transactions_only') {
+                $user->accounts()->update(['current_balance' => 0.00]);
+            } else {
+                // full_reset: remove custom categories and reset accounts
+                \App\Models\Category::where('user_id', $user->id)->delete();
+                $user->accounts()->delete();
+                // Ensure at least one clean standard account exists
+                $user->accounts()->create([
+                    'name' => 'Conta Principal',
+                    'type' => AccountType::Checking,
+                    'current_balance' => 0.00,
+                ]);
+            }
+        });
+
+        $message = $validated['mode'] === 'transactions_only'
+            ? 'Todas as suas movimentações, extratos e comprovantes foram removidos com sucesso. O saldo das suas contas foi zerado para você recomeçar limpo!'
+            : 'Sua conta foi totalmente resetada com sucesso. Tudo está pronto para um novo começo!';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('success', $message);
+    }
 }

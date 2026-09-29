@@ -31,6 +31,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // Visão Geral / Dashboard (SPA)
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::post('/configuracoes/ciclo', [DashboardController::class, 'updateCycle'])->name('settings.cycle');
+Route::post('/configuracoes/reset-dados', [DashboardController::class, 'resetData'])->name('settings.reset_data');
 
 // 1. Instituições & Contas Bancárias (CRUD Completo)
 Route::get('/contas', [AccountController::class, 'index'])->name('accounts.index');
@@ -40,7 +41,9 @@ Route::delete('/contas/{account}', [AccountController::class, 'destroy'])->name(
 
 // 2. Extratos Bancários (Área Dedicada / Compatibilidade)
 Route::get('/extratos', [StatementController::class, 'index'])->name('statements.index');
+Route::get('/extratos/recentes', [StatementController::class, 'recentImports'])->name('statement.recent');
 Route::post('/extratos/upload', [StatementController::class, 'upload'])->name('statement.upload');
+Route::delete('/extratos/importacao/{statementImport}', [StatementController::class, 'destroy'])->name('statement.destroy');
 
 // 3. Lançamentos & Transações (Área Dedicada)
 Route::get('/transacoes', [TransactionController::class, 'index'])->name('transactions.index');

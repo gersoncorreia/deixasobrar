@@ -7,7 +7,12 @@ import {
     Calendar, 
     ShieldCheck, 
     Zap, 
-    Loader2 
+    Loader2,
+    AlertTriangle,
+    Trash2,
+    RotateCcw,
+    ChevronDown,
+    ChevronUp
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -25,11 +30,23 @@ const form = reactive({
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
+// Reset Data State
+const showResetSection = ref(false);
+const resetMode = ref('transactions_only'); // 'transactions_only' | 'full_reset'
+const resetConfirmationText = ref('');
+const isResetting = ref(false);
+const resetErrorMessage = ref('');
+const resetSuccessMessage = ref('');
+
 watch(() => props.isOpen, (newVal) => {
     if (newVal) {
         form.payday_day = props.user?.payday_day || 5;
         form.safety_reserve = props.user?.safety_reserve || 200;
         errorMessage.value = '';
+        showResetSection.value = false;
+        resetConfirmationText.value = '';
+        resetErrorMessage.value = '';
+        resetSuccessMessage.value = '';
     }
 });
 
@@ -64,6 +81,34 @@ const submit = async () => {
         isSubmitting.value = false;
     }
 };
+
+const executeReset = async () => {
+    if (resetConfirmationText.value.trim().toUpperCase() !== 'ZERAR') {
+        resetErrorMessage.value = 'Por favor, digite a palavra ZERAR para confirmar.';
+        return;
+    }
+
+    isResetting.value = true;
+    resetErrorMessage.value = '';
+
+    try {
+        const res = await window.axios.post('/configuracoes/reset-dados', {
+            mode: resetMode.value,
+            confirmation: 'ZERAR',
+        });
+
+        if (res.data?.success) {
+            resetSuccessMessage.value = res.data.message;
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1200);
+        }
+    } catch (err) {
+        resetErrorMessage.value = err.response?.data?.message || 'Erro ao zerar dados da conta.';
+    } finally {
+        isResetting.value = false;
+    }
+};
 </script>
 
 <template>
@@ -78,7 +123,7 @@ const submit = async () => {
         <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
             
             <div 
-                class="glass-panel w-full max-w-md rounded-2xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95"
+                class="glass-panel w-full max-w-md rounded-2xl p-6 sm:p-7 border border-slate-700/80 shadow-2xl relative overflow-hidden bg-slate-900/95 max-h-[90vh] overflow-y-auto"
                 @click.stop
             >
                 <button 
@@ -177,6 +222,91 @@ const submit = async () => {
                     </div>
 
                 </form>
+
+                <!-- Zona de Limpeza / Recomeçar do Zero -->
+                <div class="mt-6 pt-5 border-t border-slate-800">
+                    <button 
+                        type="button"
+                        @click="showResetSection = !showResetSection"
+                        class="w-full flex items-center justify-between text-left py-2 px-3 rounded-xl hover:bg-rose-500/10 transition-colors border border-transparent hover:border-rose-500/20 group"
+                    >
+                        <div class="flex items-center gap-2.5">
+                            <AlertTriangle class="w-4 h-4 text-rose-400 shrink-0 group-hover:scale-110 transition-transform" />
+                            <div>
+                                <h4 class="text-xs font-bold text-rose-300">Zona de Limpeza (Zerar Dados)</h4>
+                                <p class="text-[11px] text-slate-400">Importou errado ou quer recomeçar do zero?</p>
+                            </div>
+                        </div>
+                        <component :is="showResetSection ? ChevronUp : ChevronDown" class="w-4 h-4 text-slate-400 group-hover:text-rose-300" />
+                    </button>
+
+                    <div v-if="showResetSection" class="mt-4 p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-4">
+                        <p class="text-xs text-rose-200/90 leading-relaxed">
+                            Aqui você pode apagar extratos, comprovantes e movimentações que foram enviados por engano, sem precisar criar uma conta nova.
+                        </p>
+
+                        <div class="space-y-2">
+                            <label class="flex items-start gap-2.5 cursor-pointer p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-rose-500/40 transition-colors">
+                                <input 
+                                    type="radio" 
+                                    name="reset_mode" 
+                                    value="transactions_only" 
+                                    v-model="resetMode"
+                                    class="mt-0.5 text-rose-500 focus:ring-rose-500 bg-slate-950 border-slate-700"
+                                />
+                                <div>
+                                    <div class="text-xs font-bold text-white">Limpar apenas Movimentações & Extratos</div>
+                                    <div class="text-[11px] text-slate-400 leading-tight">Apaga todos os extratos, notas escaneadas e lançamentos. Mantém suas contas bancárias e contas fixas cadastradas.</div>
+                                </div>
+                            </label>
+
+                            <label class="flex items-start gap-2.5 cursor-pointer p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-rose-500/40 transition-colors">
+                                <input 
+                                    type="radio" 
+                                    name="reset_mode" 
+                                    value="full_reset" 
+                                    v-model="resetMode"
+                                    class="mt-0.5 text-rose-500 focus:ring-rose-500 bg-slate-950 border-slate-700"
+                                />
+                                <div>
+                                    <div class="text-xs font-bold text-rose-300">Zerar Tudo (Reinício Completo)</div>
+                                    <div class="text-[11px] text-slate-400 leading-tight">Apaga movimentações, extratos, categorias personalizadas e redefine suas contas para R$ 0,00.</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-rose-200 mb-1">
+                                Digite <strong class="text-white underline">ZERAR</strong> para confirmar:
+                            </label>
+                            <input 
+                                v-model="resetConfirmationText"
+                                type="text"
+                                placeholder="ZERAR"
+                                class="w-full bg-slate-950/80 border border-rose-500/30 rounded-xl px-3 py-2 text-xs text-white uppercase placeholder-slate-600 focus:outline-none focus:border-rose-500 transition-colors tracking-widest font-mono"
+                            />
+                        </div>
+
+                        <div v-if="resetErrorMessage" class="p-2.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs">
+                            {{ resetErrorMessage }}
+                        </div>
+
+                        <div v-if="resetSuccessMessage" class="p-2.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs">
+                            {{ resetSuccessMessage }}
+                        </div>
+
+                        <button 
+                            type="button"
+                            @click="executeReset"
+                            :disabled="isResetting || resetConfirmationText.trim().toUpperCase() !== 'ZERAR'"
+                            class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all"
+                        >
+                            <Loader2 v-if="isResetting" class="w-4 h-4 animate-spin" />
+                            <Trash2 v-else class="w-4 h-4" />
+                            <span>{{ isResetting ? 'Limpando dados...' : 'Confirmar e Zerar Dados' }}</span>
+                        </button>
+                    </div>
+                </div>
 
             </div>
         </div>
