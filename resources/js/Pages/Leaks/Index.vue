@@ -49,18 +49,18 @@ const handleMonthChange = (e) => {
 </script>
 
 <template>
-    <Head title="Raio-X de Vazamentos & Simulador" />
+    <Head title="Para Onde Foi o Dinheiro? — DeixaSobrar" />
 
-    <AppLayout title="Raio-X de Vazamentos">
+    <AppLayout title="Para Onde Foi o Dinheiro?">
         <div class="space-y-8 pb-16">
             <!-- Header with Title and Period Picker -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                        Raio-X de Vazamentos & Economia 🎯
+                        Para Onde Foi o Seu Dinheiro? 🕵️
                     </h1>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                        Identifique e estanque as micro-saídas invisíveis que drenam o seu teto diário seguro.
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+                        Descubra compras por impulso, lanches e pequenos gastos do dia a dia que passam despercebidos e veja quanto pode sobrar na sua conta.
                     </p>
                 </div>
 
@@ -101,7 +101,7 @@ const handleMonthChange = (e) => {
                         : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-850 border border-slate-800'"
                 >
                     <Flame class="w-4 h-4" />
-                    <span>Lançamentos Rastreados</span>
+                    <span>Gastos Detectados</span>
                     <span 
                         class="px-2 py-0.5 rounded-full text-[10px] font-black"
                         :class="activeTab === 'transactions' ? 'bg-slate-950/25 text-slate-950' : 'bg-slate-800 text-amber-300'"
@@ -119,7 +119,7 @@ const handleMonthChange = (e) => {
                         : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-850 border border-slate-800'"
                 >
                     <Sparkles class="w-4 h-4" />
-                    <span>Simulador de Economia</span>
+                    <span>Simular Economia</span>
                 </button>
 
                 <button
@@ -131,7 +131,7 @@ const handleMonthChange = (e) => {
                         : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-850 border border-slate-800'"
                 >
                     <Tag class="w-4 h-4" />
-                    <span>Ranking por Categorias</span>
+                    <span>Maiores Categorias</span>
                     <span 
                         class="px-2 py-0.5 rounded-full text-[10px] font-black"
                         :class="activeTab === 'categories' ? 'bg-slate-950/25 text-slate-950' : 'bg-slate-800 text-amber-300'"

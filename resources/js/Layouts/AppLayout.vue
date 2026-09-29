@@ -39,15 +39,15 @@ const { isPrivate, togglePrivacy } = usePrivacyMode();
 const { isMobileMenuOpen, openMobileMenu, closeMobileMenu } = useMobileMenu();
 
 const navItems = [
-    { name: 'Visão Geral', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Inteligência & Gráficos', href: '/analises', icon: PieChart },
-    { name: 'Scanner OCR', href: '/scanner', icon: Camera },
-    { name: 'Contas & Bancos', href: '/contas', icon: Building2 },
-    { name: 'Extratos', href: '/extratos', icon: FileUp },
-    { name: 'Lançamentos', href: '/transacoes', icon: ArrowLeftRight },
-    { name: 'Contas Blindadas', href: '/blindagem', icon: ShieldCheck },
-    { name: 'Raio-X Vazamentos', href: '/vazamentos', icon: Flame },
-    { name: 'Meu Plano Pro', href: '/assinatura', icon: CreditCard },
+    { name: 'Início', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Extrato & Gastos', href: '/transacoes', icon: ArrowLeftRight },
+    { name: 'Contas Fixas', href: '/blindagem', icon: ShieldCheck },
+    { name: 'Para Onde Foi?', href: '/vazamentos', icon: Flame },
+];
+
+const secondaryNavItems = [
+    { name: 'Meus Bancos & Contas', href: '/contas', icon: Building2 },
+    { name: 'Meu Plano', href: '/assinatura', icon: CreditCard },
 ];
 
 const isActive = (href) => {
@@ -62,36 +62,65 @@ const logout = () => {
 <template>
     <div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans selection:bg-emerald-500 selection:text-slate-950">
         
-        <!-- Desktop Sidebar -->
+        <!-- Desktop Sidebar Simplificada -->
         <aside class="hidden md:flex flex-col w-64 bg-slate-900/60 border-r border-slate-800/80 p-5 shrink-0 justify-between">
-            <div>
+            <div class="space-y-6">
                 <!-- Brand -->
-                <Link href="/dashboard" class="flex items-center gap-3 mb-8">
+                <Link href="/dashboard" class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 p-0.5 shadow-md shadow-emerald-500/20">
                         <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
                             <TrendingUp class="w-5 h-5 text-emerald-400" />
                         </div>
                     </div>
-                    <span class="text-lg font-extrabold text-white tracking-tight">
-                        Deixa<span class="text-emerald-400">Sobrar</span>
-                    </span>
+                    <div>
+                        <span class="text-lg font-extrabold text-white tracking-tight">
+                            Deixa<span class="text-emerald-400">Sobrar</span>
+                        </span>
+                        <span class="block text-[10px] text-slate-400 font-medium">Controle descomplicado</span>
+                    </div>
                 </Link>
 
-                <!-- Navigation -->
-                <nav class="space-y-1.5">
-                    <Link 
-                        v-for="item in navItems" 
-                        :key="item.name" 
-                        :href="item.href"
-                        class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                        :class="isActive(item.href) 
-                            ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10' 
-                            : 'text-slate-400 hover:text-white hover:bg-slate-800/60'"
-                    >
-                        <component :is="item.icon" class="w-4 h-4" :class="isActive(item.href) ? 'text-emerald-400' : 'text-slate-400'" />
-                        {{ item.name }}
-                    </Link>
-                </nav>
+                <!-- Navigation Principal (4 Pilares) -->
+                <div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-3 mb-2">
+                        Principal
+                    </span>
+                    <nav class="space-y-1.5">
+                        <Link 
+                            v-for="item in navItems" 
+                            :key="item.name" 
+                            :href="item.href"
+                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                            :class="isActive(item.href) 
+                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10' 
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
+                        >
+                            <component :is="item.icon" class="w-4 h-4" :class="isActive(item.href) ? 'text-emerald-400' : 'text-slate-400'" />
+                            {{ item.name }}
+                        </Link>
+                    </nav>
+                </div>
+
+                <!-- Configurações Rápidas -->
+                <div>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-3 mb-2">
+                        Minha Conta
+                    </span>
+                    <nav class="space-y-1">
+                        <Link 
+                            v-for="item in secondaryNavItems" 
+                            :key="item.name" 
+                            :href="item.href"
+                            class="flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all"
+                            :class="isActive(item.href) 
+                                ? 'text-emerald-400 bg-slate-800/80 font-semibold' 
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'"
+                        >
+                            <component :is="item.icon" class="w-3.5 h-3.5 text-slate-400" />
+                            {{ item.name }}
+                        </Link>
+                    </nav>
+                </div>
             </div>
 
             <!-- User Footer in Sidebar -->
@@ -112,7 +141,7 @@ const logout = () => {
                     </div>
                     <button 
                         @click="logout" 
-                        title="Sair"
+                        title="Sair da conta"
                         class="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                     >
                         <LogOut class="w-4 h-4" />
@@ -200,12 +229,12 @@ const logout = () => {
             </main>
         </div>
 
-        <!-- Mobile PWA Bottom Navigation Bar (Dock Ergonômico de 5 botões) -->
+        <!-- Mobile PWA Bottom Navigation Bar (Dock Ergonômico dos 4 Pilares + Menu) -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 flex items-center justify-around pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.6)]">
-            <!-- 1. Visão Geral / Início -->
+            <!-- 1. Início -->
             <Link 
                 href="/dashboard" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/dashboard') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
@@ -217,10 +246,10 @@ const logout = () => {
                 <span>Início</span>
             </Link>
 
-            <!-- 2. Extrato / Lançamentos -->
+            <!-- 2. Extrato & Gastos -->
             <Link 
                 href="/transacoes" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
                 :class="isActive('/transacoes') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
@@ -232,39 +261,41 @@ const logout = () => {
                 <span>Extrato</span>
             </Link>
 
-            <!-- 3. Scanner OCR (Botão Central em Destaque Fluorescente) -->
+            <!-- 3. Contas Fixas -->
             <Link 
-                href="/scanner" 
-                class="flex flex-col items-center -mt-5 group"
-            >
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-xl shadow-emerald-500/35 group-active:scale-90 transition-transform">
-                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center group-hover:bg-transparent transition-colors p-2">
-                        <Camera class="w-5 h-5 text-emerald-400 group-hover:text-slate-950 transition-colors" />
-                    </div>
-                </div>
-                <span class="text-[9px] font-extrabold text-emerald-400 mt-1">Scanner</span>
-            </Link>
-
-            <!-- 4. Análises & Gráficos (Agora com acesso direto no Dock!) -->
-            <Link 
-                href="/analises" 
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
-                :class="isActive('/analises') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
+                href="/blindagem" 
+                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
+                :class="isActive('/blindagem') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
             >
                 <div 
                     class="p-1 rounded-lg transition-all"
-                    :class="isActive('/analises') ? 'bg-emerald-500/15' : ''"
+                    :class="isActive('/blindagem') ? 'bg-emerald-500/15' : ''"
                 >
-                    <PieChart class="w-4 h-4" />
+                    <ShieldCheck class="w-4 h-4" />
                 </div>
-                <span>Análises</span>
+                <span>Contas Fixas</span>
             </Link>
 
-            <!-- 5. Menu Completo (Abre Drawer com todos os links da Sidebar) -->
+            <!-- 4. Para Onde Foi? -->
+            <Link 
+                href="/vazamentos" 
+                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold transition-all active:scale-95"
+                :class="isActive('/vazamentos') ? 'text-emerald-400 font-bold' : 'text-slate-400 hover:text-white'"
+            >
+                <div 
+                    class="p-1 rounded-lg transition-all"
+                    :class="isActive('/vazamentos') ? 'bg-emerald-500/15' : ''"
+                >
+                    <Flame class="w-4 h-4" />
+                </div>
+                <span>Onde Foi?</span>
+            </Link>
+
+            <!-- 5. Menu / Perfil -->
             <button 
                 type="button"
                 @click="isMobileMenuOpen = true"
-                class="flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
+                class="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-[10px] font-semibold text-slate-400 hover:text-white transition-all active:scale-95"
             >
                 <div class="p-1 rounded-lg hover:bg-slate-800/60">
                     <SlidersHorizontal class="w-4 h-4" />

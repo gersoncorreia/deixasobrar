@@ -33,17 +33,16 @@ const emit = defineEmits(['close', 'open-preferences']);
 
 const page = usePage();
 
-const menuLinks = [
-    { name: 'Visão Geral', desc: 'Resumo e Teto Diário', href: '/dashboard', icon: LayoutDashboard, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { name: 'Extratos Bancários', desc: 'Upload e histórico de arquivos', href: '/extratos', icon: FileUp, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { name: 'Scanner OCR', desc: 'Leitura de cupons e comprovantes', href: '/scanner', icon: Camera, color: 'text-teal-400', bg: 'bg-teal-500/10' },
-    { name: 'Inteligência & Gráficos', desc: 'Score, tendências e análises', href: '/analises', icon: PieChart, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-    { name: 'Lançamentos', desc: 'Extrato completo de transações', href: '/transacoes', icon: ArrowLeftRight, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-    { name: 'Contas & Bancos', desc: 'Saldos das suas instituições', href: '/contas', icon: Building2, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { name: 'Contas Blindadas', desc: 'Despesas fixas e tetos', href: '/blindagem', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { name: 'Raio-X Vazamentos', desc: 'Radar de gastos invisíveis', href: '/vazamentos', icon: Flame, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-    { name: 'Previsibilidade & Simulador', desc: 'Simule compras e veja o impacto', href: '/dashboard?tab=simulator', icon: Sparkles, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { name: 'Meu Plano Pro', desc: 'Benefícios e cobrança', href: '/assinatura', icon: CreditCard, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+const mainLinks = [
+    { name: 'Início', desc: 'Quanto posso gastar hoje e resumo', href: '/dashboard', icon: LayoutDashboard, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { name: 'Extrato & Gastos', desc: 'Suas compras, extratos e comprovantes', href: '/transacoes', icon: ArrowLeftRight, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { name: 'Contas Fixas', desc: 'Aluguel, luz, água e contas obrigatórias', href: '/blindagem', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { name: 'Para Onde Foi?', desc: 'Descubra onde seu dinheiro está sumindo', href: '/vazamentos', icon: Flame, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+];
+
+const accountLinks = [
+    { name: 'Meus Bancos & Contas', desc: 'Suas contas cadastradas e saldos', href: '/contas', icon: Building2, color: 'text-sky-400', bg: 'bg-sky-500/10' },
+    { name: 'Meu Plano', desc: 'Detalhes da sua assinatura', href: '/assinatura', icon: CreditCard, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
 ];
 
 const logout = () => {
@@ -123,56 +122,91 @@ const handleOpenPreferences = () => {
                 </div>
 
                 <!-- Links List (Scrollable) -->
-                <div class="flex-1 overflow-y-auto px-5 py-3.5 space-y-2">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block px-1">
-                        Todos os Módulos do Sistema
-                    </span>
+                <div class="flex-1 overflow-y-auto px-5 py-3.5 space-y-4">
+                    <!-- 1. Principal -->
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-2">
+                            Principal
+                        </span>
 
-                    <div class="grid grid-cols-1 gap-1.5">
-                        <Link 
-                            v-for="item in menuLinks" 
-                            :key="item.name"
-                            :href="item.href"
-                            @click="$emit('close')"
-                            class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 transition-all group"
-                        >
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="item.bg">
-                                    <component :is="item.icon" class="w-4 h-4" :class="item.color" />
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <Link 
+                                v-for="item in mainLinks" 
+                                :key="item.name"
+                                :href="item.href"
+                                @click="$emit('close')"
+                                class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 transition-all group"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="item.bg">
+                                        <component :is="item.icon" class="w-4 h-4" :class="item.color" />
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
+                                            {{ item.name }}
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 block">
+                                            {{ item.desc }}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
-                                        {{ item.name }}
-                                    </span>
-                                    <span class="text-[11px] text-slate-400 block">
-                                        {{ item.desc }}
-                                    </span>
-                                </div>
-                            </div>
-                            <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
-                        </Link>
+                                <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
+                            </Link>
+                        </div>
                     </div>
 
-                    <!-- Configurar Ciclo Salarial Action -->
-                    <button 
-                        @click="handleOpenPreferences"
-                        class="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-left transition-all group"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
-                                <Sliders class="w-4 h-4 text-teal-400" />
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
-                                    Ajustar Ciclo & Salário
-                                </span>
-                                <span class="text-[11px] text-slate-400 block">
-                                    Dia de pagamento, reserva e alertas
-                                </span>
-                            </div>
+                    <!-- 2. Minha Conta & Preferências -->
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block px-1 mb-2">
+                            Minha Conta
+                        </span>
+
+                        <div class="grid grid-cols-1 gap-1.5">
+                            <Link 
+                                v-for="item in accountLinks" 
+                                :key="item.name"
+                                :href="item.href"
+                                @click="$emit('close')"
+                                class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 transition-all group"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" :class="item.bg">
+                                        <component :is="item.icon" class="w-4 h-4" :class="item.color" />
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
+                                            {{ item.name }}
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 block">
+                                            {{ item.desc }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
+                            </Link>
+
+                            <!-- Configurar Ciclo Salarial Action -->
+                            <button 
+                                @click="handleOpenPreferences"
+                                class="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 text-left transition-all group"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-teal-500/10 flex items-center justify-center shrink-0">
+                                        <Sliders class="w-4 h-4 text-teal-400" />
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-bold text-slate-100 group-hover:text-white block">
+                                            Dia do Salário & Ciclo
+                                        </span>
+                                        <span class="text-[11px] text-slate-400 block">
+                                            Ajustar data de corte e alertas
+                                        </span>
+                                    </div>
+                                </div>
+                                <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
+                            </button>
                         </div>
-                        <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
-                    </button>
+                    </div>
                 </div>
 
                 <!-- Drawer Footer -->

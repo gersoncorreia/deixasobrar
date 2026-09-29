@@ -18,45 +18,45 @@ const { formatCurrency } = useCurrencyFormat();
         <div class="glass-panel rounded-2xl p-6 border border-amber-500/25 bg-amber-950/10 relative overflow-hidden">
             <div class="absolute -right-6 -top-6 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">
-                <span>Ralo Total Identificado</span>
+                <span>Gastos Invisíveis no Período</span>
                 <Flame class="w-4 h-4 text-amber-400" />
             </div>
             <div class="text-3xl sm:text-4xl font-black text-white font-display">
                 {{ formatCurrency(summary.totalAmount) }}
             </div>
             <p class="text-xs text-amber-200/80 mt-1">
-                {{ summary.count }} lançamentos classificados como micro-desperdício
+                {{ summary.count }} compras pequenas ou lanches somados
             </p>
         </div>
 
-        <!-- Card 2: Impacto Diário no Teto -->
+        <!-- Card 2: Impacto Diário -->
         <div class="glass-panel rounded-2xl p-6 border border-rose-500/25 bg-rose-950/10 relative overflow-hidden">
             <div class="absolute -right-6 -top-6 w-28 h-28 bg-rose-500/10 rounded-full blur-2xl pointer-events-none"></div>
             <div class="flex items-center justify-between text-xs font-bold text-rose-400 uppercase tracking-wider mb-2">
-                <span>Dreno Médio Diário</span>
+                <span>Impacto Diário no Bolso</span>
                 <TrendingDown class="w-4 h-4 text-rose-400" />
             </div>
             <div class="text-3xl sm:text-4xl font-black text-white font-display">
                 - {{ formatCurrency(summary.dailyImpact) }}
-                <span class="text-xs text-slate-400 font-normal">/ dia</span>
+                <span class="text-xs text-slate-400 font-normal">/ por dia</span>
             </div>
             <p class="text-xs text-rose-200/80 mt-1">
-                Valor que está sendo subtraído do seu teto livre diariamente
+                Valor médio que esses gastos tiram do seu dia a dia
             </p>
         </div>
 
         <!-- Card 3: Janela do Ciclo -->
         <div class="glass-panel rounded-2xl p-6 border border-slate-800 bg-slate-900/60 relative overflow-hidden">
             <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                <span>Dias Até o Pagamento</span>
+                <span>Faltam para o Próximo Salário</span>
                 <Calendar class="w-4 h-4 text-emerald-400" />
             </div>
             <div class="text-3xl sm:text-4xl font-black text-white font-display">
                 {{ summary.daysRemaining }}
-                <span class="text-xs text-slate-400 font-normal">dias restantes</span>
+                <span class="text-xs text-slate-400 font-normal">dias</span>
             </div>
             <p class="text-xs text-slate-400 mt-1">
-                Janela de tempo onde pequenas economias geram alívio imediato
+                Cortando esses gastos agora, você chega tranquilo ao dia do pagamento!
             </p>
         </div>
     </div>

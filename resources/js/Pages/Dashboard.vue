@@ -75,7 +75,7 @@ const handleStatementUploaded = () => {
                         Olá, {{ user.name.split(' ')[0] }} 👋
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                        Aqui está a previsão real do seu dinheiro e seu teto diário seguro.
+                        Veja quanto você tem livre para gastar hoje sem faltar dinheiro no fim do mês.
                     </p>
                 </div>
             </div>
@@ -86,6 +86,8 @@ const handleStatementUploaded = () => {
                     @open-menu="openMobileMenu"
                     @open-fixed-bills="isFixedBillsModalOpen = true"
                     @open-simulator="switchTab('simulator')"
+                    @open-transaction="isTransactionModalOpen = true"
+                    @open-import="switchTab('import')"
                 />
             </div>
 
@@ -99,7 +101,7 @@ const handleStatementUploaded = () => {
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'"
                 >
                     <LayoutDashboard class="w-4 h-4" />
-                    <span>Visão Geral</span>
+                    <span>Início & Resumo</span>
                 </button>
 
                 <button
@@ -110,7 +112,7 @@ const handleStatementUploaded = () => {
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'"
                 >
                     <Sparkles class="w-4 h-4" />
-                    <span>Previsibilidade & Simulador</span>
+                    <span>Posso Comprar Isso Hoje?</span>
                     <span 
                         v-if="upcomingBills?.length" 
                         class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700"
@@ -127,7 +129,7 @@ const handleStatementUploaded = () => {
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent'"
                 >
                     <UploadCloud class="w-4 h-4" />
-                    <span>Importar Extratos</span>
+                    <span>Importar Extrato</span>
                 </button>
             </div>
 

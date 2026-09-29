@@ -145,7 +145,7 @@ const deleteCustomBill = async (bill) => {
 </script>
 
 <template>
-    <Head title="Contas Blindadas & Orçamentos" />
+    <Head title="Contas Fixas do Mês — DeixaSobrar" />
 
     <AppLayout :user="user">
         <div class="space-y-6 pb-16">
@@ -154,11 +154,11 @@ const deleteCustomBill = async (bill) => {
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
-                        <ShieldCheck class="w-7 h-7 text-emerald-400" />
-                        Blindagem de Contas Fixas & Orçamentos
+                        <ShieldCheck class="w-7 h-7 text-amber-400" />
+                        Contas Fixas do Mês 📅
                     </h1>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                        Proteja o valor das suas contas obrigatórias. O saldo das contas pendentes é blindado e deduzido do Teto Diário Seguro.
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+                        Anote aqui o que você tem que pagar com certeza (aluguel, luz, água, internet). O app guarda esse dinheiro para você não gastar por engano.
                     </p>
                 </div>
 
@@ -167,7 +167,7 @@ const deleteCustomBill = async (bill) => {
                     class="btn-shimmer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all self-start sm:self-auto"
                 >
                     <PlusCircle class="w-4 h-4" />
-                    <span>{{ showAddForm ? 'Fechar Formulário' : 'Nova Conta Fixa' }}</span>
+                    <span>{{ showAddForm ? 'Fechar' : '+ Nova Conta Fixa' }}</span>
                 </button>
             </div>
 
@@ -176,37 +176,37 @@ const deleteCustomBill = async (bill) => {
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                            Total Previsto no Mês
+                            Total de Contas no Mês
                         </span>
                         <div class="text-2xl sm:text-3xl font-black text-white font-display">
                             {{ formatCurrency(summary.total_planned) }}
                         </div>
                         <p class="text-xs text-slate-500 mt-1">
-                            Soma dos tetos de todas as contas fixas cadastradas.
+                            Soma de todas as contas cadastradas.
                         </p>
                     </div>
 
                     <div>
                         <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 block mb-1">
-                            Já Pagas / Debitadas
+                            Já Pagas Este Mês ✅
                         </span>
                         <div class="text-2xl sm:text-3xl font-black text-emerald-400 font-display">
                             {{ formatCurrency(summary.total_paid) }}
                         </div>
                         <p class="text-xs text-slate-500 mt-1">
-                            {{ summary.count_paid }} contas já totalmente cobertas este mês.
+                            {{ summary.count_paid }} contas já totalmente pagas.
                         </p>
                     </div>
 
                     <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-rose-400 block mb-1">
-                            Ainda Blindado no Teto
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400 block mb-1">
+                            Falta Pagar ⏳
                         </span>
-                        <div class="text-2xl sm:text-3xl font-black text-rose-400 font-display">
+                        <div class="text-2xl sm:text-3xl font-black text-amber-400 font-display">
                             {{ formatCurrency(summary.total_pending) }}
                         </div>
                         <p class="text-xs text-slate-500 mt-1">
-                            Valor retido para impedir que você gaste o dinheiro das contas.
+                            Dinheiro guardado para pagar os boletos restantes.
                         </p>
                     </div>
                 </div>
@@ -214,7 +214,7 @@ const deleteCustomBill = async (bill) => {
                 <!-- Progress Bar -->
                 <div class="space-y-1.5 pt-4 border-t border-slate-800/80">
                     <div class="flex items-center justify-between text-xs text-slate-400">
-                        <span>Progresso de Quitação de Contas no Mês</span>
+                        <span>Progresso dos Pagamentos do Mês</span>
                         <span class="font-bold text-emerald-400">{{ summary.percent_shielded }}% pago</span>
                     </div>
                     <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">

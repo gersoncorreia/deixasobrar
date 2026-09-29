@@ -38,7 +38,7 @@ Route::post('/contas', [AccountController::class, 'store'])->name('accounts.stor
 Route::put('/contas/{account}', [AccountController::class, 'update'])->name('accounts.update');
 Route::delete('/contas/{account}', [AccountController::class, 'destroy'])->name('accounts.destroy');
 
-// 2. Extratos Bancários (Área Dedicada)
+// 2. Extratos Bancários (Área Dedicada / Compatibilidade)
 Route::get('/extratos', [StatementController::class, 'index'])->name('statements.index');
 Route::post('/extratos/upload', [StatementController::class, 'upload'])->name('statement.upload');
 

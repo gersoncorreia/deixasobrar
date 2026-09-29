@@ -1,13 +1,15 @@
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { Head, router, Link } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { useCurrencyFormat } from '@/Composables/useCurrencyFormat';
 import TransactionModal from '@/Components/Financial/TransactionModal.vue';
+import StatementDropzone from '@/Components/Dashboard/StatementDropzone.vue';
 import { 
     ArrowLeftRight, 
     PlusCircle, 
     FileUp,
+    Camera,
     Search, 
     X, 
     Flame, 
@@ -37,7 +39,15 @@ const props = defineProps({
 const { formatCurrency } = useCurrencyFormat();
 
 const isTransactionModalOpen = ref(false);
+const isImportModalOpen = ref(false);
 const isUpdating = ref(null);
+
+onMounted(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('import') === '1') {
+        isImportModalOpen.value = true;
+    }
+});
 
 const filterState = reactive({
     search: props.filters?.search || '',
@@ -146,7 +156,7 @@ const safeFormatDate = (dateStr) => {
 </script>
 
 <template>
-    <Head title="Lançamentos & Transações" />
+    <Head title="Extrato & Gastos" />
 
     <AppLayout :user="user">
         <div class="space-y-6 pb-16">
@@ -156,20 +166,29 @@ const safeFormatDate = (dateStr) => {
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
                         <ArrowLeftRight class="w-7 h-7 text-emerald-400" />
-                        Lançamentos & Transações
+                        Extrato & Gastos
                     </h1>
-                    <p class="text-xs sm:text-sm text-slate-400 mt-1">
-                        Visualize, filtre por categoria ou conta, e identifique pequenos vazamentos invisíveis no seu orçamento.
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
+                        Tudo o que entrou e saiu da sua conta em um só lugar. Você pode enviar seu extrato do banco, ler a foto de um cupom ou anotar um gasto na hora.
                     </p>
                 </div>
 
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <Link 
-                        href="/extratos"
-                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-semibold text-xs sm:text-sm transition-all"
+                <!-- 3 Ações Principais de Entrada de Dados -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                    <button 
+                        @click="isImportModalOpen = true"
+                        class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-semibold text-xs sm:text-sm transition-all shadow-sm"
                     >
-                        <FileUp class="w-4 h-4 text-emerald-400" />
-                        <span>Subir Extrato</span>
+                        <FileUp class="w-4 h-4 text-blue-400" />
+                        <span>Importar Extrato</span>
+                    </button>
+
+                    <Link 
+                        href="/scanner"
+                        class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700/80 font-semibold text-xs sm:text-sm transition-all shadow-sm"
+                    >
+                        <Camera class="w-4 h-4 text-teal-400" />
+                        <span>Ler Cupom</span>
                     </Link>
 
                     <button 
@@ -177,7 +196,7 @@ const safeFormatDate = (dateStr) => {
                         class="btn-shimmer inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all"
                     >
                         <PlusCircle class="w-4 h-4" />
-                        <span>Novo Lançamento</span>
+                        <span>+ Novo Gasto</span>
                     </button>
                 </div>
             </div>
@@ -189,17 +208,17 @@ const safeFormatDate = (dateStr) => {
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                            Extrato Detalhado
+                            Minhas Movimentações
                             <span v-if="transactions" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-xs font-normal">
                                 {{ transactions.total }} registros
                             </span>
                         </h2>
                         <p class="text-xs text-slate-400 mt-0.5">
-                            Filtre por tipo, pesquise por nome ou recategorize com 1 clique.
+                            Veja a lista completa de compras, pagamentos e recebimentos.
                         </p>
                     </div>
 
-                    <!-- Type Filter Tabs -->
+                    <!-- Type Filter Tabs (Linguagem Amigável) -->
                     <div class="flex items-center p-1 bg-slate-900 border border-slate-800 rounded-2xl">
                         <button 
                             @click="setTypeFilter('all')"
@@ -213,14 +232,14 @@ const safeFormatDate = (dateStr) => {
                             class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
                             :class="filterState.type === 'expense' ? 'bg-rose-500/20 text-rose-300 shadow-sm' : 'text-slate-400 hover:text-white'"
                         >
-                            Saídas
+                            Gastos
                         </button>
                         <button 
                             @click="setTypeFilter('income')"
                             class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
                             :class="filterState.type === 'income' ? 'bg-emerald-500/20 text-emerald-300 shadow-sm' : 'text-slate-400 hover:text-white'"
                         >
-                            Entradas
+                            Ganhos
                         </button>
                         <button 
                             @click="setTypeFilter('leak')"
@@ -228,7 +247,7 @@ const safeFormatDate = (dateStr) => {
                             :class="filterState.type === 'leak' ? 'bg-amber-500/20 text-amber-300 shadow-sm' : 'text-slate-400 hover:text-white'"
                         >
                             <Flame class="w-3.5 h-3.5 text-amber-400" />
-                            Vazamentos
+                            Gastos Invisíveis
                         </button>
                     </div>
                 </div>
@@ -438,6 +457,40 @@ const safeFormatDate = (dateStr) => {
             </div>
 
         </div>
+
+        <!-- Modal de Importação Rápida de Extrato Bancário -->
+        <Teleport to="body">
+            <div 
+                v-if="isImportModalOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in"
+                @click.self="isImportModalOpen = false"
+            >
+                <div class="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                <FileUp class="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-white">Importar Extrato do Banco</h3>
+                                <p class="text-xs text-slate-400">Envie arquivos OFX ou CSV do Nubank, BB, Itaú, etc.</p>
+                            </div>
+                        </div>
+                        <button 
+                            @click="isImportModalOpen = false" 
+                            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                        >
+                            <X class="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <StatementDropzone 
+                        :accounts="accounts"
+                        @uploaded="() => { isImportModalOpen = false; router.reload(); }"
+                    />
+                </div>
+            </div>
+        </Teleport>
 
         <TransactionModal 
             :is-open="isTransactionModalOpen"

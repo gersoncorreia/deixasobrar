@@ -17,26 +17,26 @@ const { formatCurrency } = useCurrencyFormat();
     <div class="glass-panel rounded-2xl p-5 sm:p-6 border border-slate-800">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
             <div>
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
                     <Calendar class="w-4 h-4 text-emerald-400" />
-                    <span>Linha do Tempo de Contas Fixas no Ciclo</span>
+                    <span>Próximas Contas a Pagar</span>
                 </h3>
-                <p class="text-[11px] text-slate-500 mt-0.5">
-                    Previsão de vencimentos e status de quitação automática.
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                    Seus compromissos obrigatórios deste mês para você não esquecer.
                 </p>
             </div>
             
             <Link 
                 href="/blindagem" 
-                class="text-[11px] text-emerald-400 hover:underline font-semibold flex items-center gap-1"
+                class="text-xs text-emerald-400 hover:underline font-semibold flex items-center gap-1"
             >
                 <span>Ver todas</span>
-                <ArrowRight class="w-3 h-3" />
+                <ArrowRight class="w-3.5 h-3.5" />
             </Link>
         </div>
 
-        <div v-if="upcomingBills.length === 0" class="py-6 text-center text-slate-500 text-xs">
-            Nenhuma conta fixa cadastrada com vencimento neste ciclo.
+        <div v-if="upcomingBills.length === 0" class="py-6 text-center text-slate-400 text-xs">
+            Nenhuma conta fixa cadastrada para este mês.
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -53,14 +53,14 @@ const { formatCurrency } = useCurrencyFormat();
                         {{ bill.name }}
                     </span>
                     <span 
-                        class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0"
+                        class="text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0"
                         :class="bill.is_paid 
                             ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-                            : 'bg-slate-800 text-amber-300 border border-slate-700'"
+                            : (bill.days_until_due <= 1 ? 'bg-rose-500/15 text-rose-300 border border-rose-500/30' : 'bg-slate-800 text-amber-300 border border-slate-700')"
                     >
-                        <CheckCircle2 v-if="bill.is_paid" class="w-3 h-3" />
+                        <CheckCircle2 v-if="bill.is_paid" class="w-3 h-3 text-emerald-400" />
                         <Clock v-else class="w-3 h-3" />
-                        {{ bill.is_paid ? 'Quitada' : (bill.days_until_due === 0 ? 'Vence Hoje' : `em ${bill.days_until_due}d`) }}
+                        {{ bill.is_paid ? 'Paga ✅' : (bill.days_until_due === 0 ? 'Vence Hoje ⚠️' : `Vence em ${bill.days_until_due}d`) }}
                     </span>
                 </div>
 

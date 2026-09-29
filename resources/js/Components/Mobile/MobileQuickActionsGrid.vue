@@ -1,18 +1,18 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import {
+    ArrowLeftRight,
+    PlusCircle,
     FileUp,
     Camera,
-    PieChart,
-    Flame,
-    Building2,
     ShieldCheck,
     Sparkles,
+    Flame,
     MoreHorizontal
 } from 'lucide-vue-next';
 import { useMobileMenu } from '@/Composables/useMobileMenu';
 
-const emit = defineEmits(['open-menu', 'open-fixed-bills', 'open-simulator']);
+const emit = defineEmits(['open-menu', 'open-fixed-bills', 'open-simulator', 'open-transaction', 'open-import']);
 const { openMobileMenu } = useMobileMenu();
 
 const handleAction = (item) => {
@@ -23,17 +23,21 @@ const handleAction = (item) => {
         emit('open-fixed-bills');
     } else if (item.action === 'simulator') {
         emit('open-simulator');
+    } else if (item.action === 'new-transaction') {
+        emit('open-transaction');
+    } else if (item.action === 'import') {
+        emit('open-import');
     }
 };
 
 const actions = [
-    { label: 'Extratos', href: '/extratos', icon: FileUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    { label: 'Scanner', href: '/scanner', icon: Camera, color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
-    { label: 'Análises', href: '/analises', icon: PieChart, color: 'text-indigo-400', bg: 'bg-indigo-500/10 border-indigo-500/20' },
-    { label: 'Raio-X', href: '/vazamentos', icon: Flame, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
-    { label: 'Contas', href: '/contas', icon: Building2, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
-    { label: 'Blindar', action: 'fixed-bills', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-    { label: 'Simulador', action: 'simulator', icon: Sparkles, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+    { label: 'Extrato', href: '/transacoes', icon: ArrowLeftRight, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+    { label: '+ Gasto', action: 'new-transaction', icon: PlusCircle, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
+    { label: 'Importar', action: 'import', icon: FileUp, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+    { label: 'Ler Cupom', href: '/scanner', icon: Camera, color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
+    { label: 'Contas Fixas', action: 'fixed-bills', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+    { label: 'Posso Comprar?', action: 'simulator', icon: Sparkles, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
+    { label: 'Onde Foi?', href: '/vazamentos', icon: Flame, color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
     { label: 'Ver mais', action: 'menu', icon: MoreHorizontal, color: 'text-slate-300', bg: 'bg-slate-800/80 border-slate-700/80' },
 ];
 </script>
