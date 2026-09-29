@@ -104,8 +104,8 @@ const handleStatementUploaded = () => {
                 />
             </div>
 
-            <!-- Tab Selector Bar (Desktop & Secondary Navigation) -->
-            <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md overflow-x-auto scrollbar-none">
+            <!-- Tab Selector Bar (Desktop Navigation - Hidden on Mobile to avoid clutter) -->
+            <div class="hidden md:flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md overflow-x-auto scrollbar-none">
                 <button
                     @click="switchTab('overview')"
                     class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap"

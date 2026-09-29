@@ -15,7 +15,9 @@ import {
     Sparkles,
     ShieldAlert,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    AlertTriangle,
+    Trash2
 } from 'lucide-vue-next';
 
 defineProps({
@@ -204,6 +206,27 @@ const handleOpenPreferences = () => {
                                     </div>
                                 </div>
                                 <ChevronRight class="w-4 h-4 text-slate-600 group-hover:text-slate-300 transition-colors" />
+                            </button>
+
+                            <!-- Zona de Limpeza / Zerar Dados Direct Action -->
+                            <button 
+                                @click="handleOpenPreferences"
+                                class="w-full flex items-center justify-between p-2.5 rounded-xl bg-rose-950/20 hover:bg-rose-950/40 border border-rose-500/30 text-left transition-all group"
+                            >
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-rose-500/15 flex items-center justify-center shrink-0">
+                                        <Trash2 class="w-4 h-4 text-rose-400" />
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-bold text-rose-300 group-hover:text-white block">
+                                            Zerar Dados & Recomeçar
+                                        </span>
+                                        <span class="text-[11px] text-rose-400/80 block">
+                                            Apagar extratos e dados de teste
+                                        </span>
+                                    </div>
+                                </div>
+                                <ChevronRight class="w-4 h-4 text-rose-500/60 group-hover:text-rose-300 transition-colors" />
                             </button>
                         </div>
                     </div>

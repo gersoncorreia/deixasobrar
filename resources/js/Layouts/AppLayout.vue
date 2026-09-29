@@ -17,11 +17,15 @@ import {
     EyeOff,
     Menu,
     SlidersHorizontal,
-    Sparkles
+    Sparkles,
+    Settings
 } from 'lucide-vue-next';
 import { usePrivacyMode } from '@/Composables/usePrivacyMode';
 import { useMobileMenu } from '@/Composables/useMobileMenu';
 import MobileMenuDrawer from '@/Components/Mobile/MobileMenuDrawer.vue';
+import PreferencesModal from '@/Components/Financial/PreferencesModal.vue';
+
+const isPreferencesModalOpen = ref(false);
 
 defineProps({
     title: {
@@ -119,6 +123,15 @@ const logout = () => {
                             <component :is="item.icon" class="w-3.5 h-3.5 text-slate-400" />
                             {{ item.name }}
                         </Link>
+
+                        <button 
+                            type="button"
+                            @click="isPreferencesModalOpen = true"
+                            class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all text-left group"
+                        >
+                            <Settings class="w-3.5 h-3.5 text-slate-400 group-hover:text-rose-400" />
+                            <span>Configurações & Zerar</span>
+                        </button>
                     </nav>
                 </div>
             </div>
@@ -309,6 +322,14 @@ const logout = () => {
             :is-open="isMobileMenuOpen" 
             :user="user" 
             @close="isMobileMenuOpen = false" 
+            @open-preferences="isPreferencesModalOpen = true"
+        />
+
+        <!-- Modal Global de Preferências & Zerar Dados -->
+        <PreferencesModal 
+            :is-open="isPreferencesModalOpen"
+            :user="user"
+            @close="isPreferencesModalOpen = false"
         />
 
     </div>

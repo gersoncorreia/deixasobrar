@@ -33,21 +33,33 @@ const { isPrivate, maskValue } = usePrivacyMode();
                 </span>
             </div>
             
-            <!-- Semáforo Amigável -->
-            <span 
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-                :class="safeToSpend.status === 'healthy' 
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-                    : (safeToSpend.status === 'critical' 
-                        ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
-                        : 'bg-amber-500/15 text-amber-400 border border-amber-500/30')"
-            >
+            <div class="flex items-center gap-2">
+                <!-- Semáforo Amigável -->
                 <span 
-                    class="w-2 h-2 rounded-full animate-pulse"
-                    :class="safeToSpend.status === 'healthy' ? 'bg-emerald-400' : (safeToSpend.status === 'critical' ? 'bg-rose-400' : 'bg-amber-400')"
-                ></span>
-                {{ safeToSpend.status === 'healthy' ? '🟢 Tudo Tranquilo' : (safeToSpend.status === 'critical' ? '🔴 Aperto no Mês' : '🟡 Cuidado com os Gastos') }}
-            </span>
+                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
+                    :class="safeToSpend.status === 'healthy' 
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
+                        : (safeToSpend.status === 'critical' 
+                            ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' 
+                            : 'bg-amber-500/15 text-amber-400 border border-amber-500/30')"
+                >
+                    <span 
+                        class="w-2 h-2 rounded-full animate-pulse"
+                        :class="safeToSpend.status === 'healthy' ? 'bg-emerald-400' : (safeToSpend.status === 'critical' ? 'bg-rose-400' : 'bg-amber-400')"
+                    ></span>
+                    {{ safeToSpend.status === 'healthy' ? '🟢 Tudo Tranquilo' : (safeToSpend.status === 'critical' ? '🔴 Aperto no Mês' : '🟡 Cuidado com os Gastos') }}
+                </span>
+
+                <!-- Botão Discreto de Ajustes / Zerar -->
+                <button
+                    @click="$emit('open-preferences')"
+                    type="button"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent hover:border-slate-700 transition-colors"
+                    title="Ajustar dia do pagamento ou zerar dados"
+                >
+                    <Sliders class="w-4 h-4" />
+                </button>
+            </div>
         </div>
 
         <!-- Main Display: Quanto posso gastar hoje -->
@@ -70,42 +82,6 @@ const { isPrivate, maskValue } = usePrivacyMode();
                         : 'Gaste com bastante atenção hoje para garantir que nenhum boleto fique sem pagar no fim do mês.')
                 }}
             </p>
-        </div>
-
-        <!-- Quick Action Pills inside Card (Mobile & Desktop) -->
-        <div class="flex flex-wrap items-center gap-2 mb-6">
-            <!-- Contas Fixas Button -->
-            <button 
-                @click="$emit('open-fixed-bills')"
-                type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-200 bg-slate-800/80 border border-slate-700 hover:border-emerald-500/50 hover:bg-slate-800 hover:text-white transition-all active:scale-95 shadow-sm"
-                title="Ver e adicionar contas do mês"
-            >
-                <ShieldCheck class="w-3.5 h-3.5 text-amber-400" />
-                <span>Minhas Contas Fixas</span>
-            </button>
-
-            <!-- Simular Compra Button -->
-            <button 
-                @click="$emit('open-simulator')"
-                type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-200 bg-slate-800/80 border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800 hover:text-white transition-all active:scale-95 shadow-sm"
-                title="Testar se posso comprar algo hoje"
-            >
-                <Sparkles class="w-3.5 h-3.5 text-purple-400" />
-                <span>Posso Comprar Isso?</span>
-            </button>
-
-            <!-- Configurar Ciclo Button -->
-            <button 
-                @click="$emit('open-preferences')"
-                type="button"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800/50 border border-slate-700/60 hover:bg-slate-800 hover:text-white transition-all active:scale-95 shadow-sm"
-                title="Configurar dia do pagamento"
-            >
-                <Sliders class="w-3.5 h-3.5 text-slate-400" />
-                <span>Dia do Salário</span>
-            </button>
         </div>
 
         <!-- Metrics Breakdown Grid (Linguagem Acessível) -->
