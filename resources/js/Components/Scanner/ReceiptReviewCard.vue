@@ -11,7 +11,8 @@ import {
     Tag, 
     ChevronDown, 
     ChevronUp,
-    ExternalLink
+    ExternalLink,
+    Trash2
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -27,6 +28,17 @@ const { formatCurrency } = useCurrencyFormat();
 const showItems = ref(true);
 const isSubmitting = ref(false);
 
+const editableItems = ref(
+    (props.scan.items || []).map(i => ({
+        id: i.id,
+        item_name: i.item_name,
+        quantity: i.quantity,
+        unit_price: i.unit_price,
+        total_price: i.total_price,
+        item_category: i.item_category || 'alimentacao_essencial'
+    }))
+);
+
 const form = ref({
     account_id: props.accounts?.[0]?.id || '',
     category_id: props.categories?.[0]?.id || '',
@@ -35,10 +47,31 @@ const form = ref({
     transaction_date: props.scan.purchased_at ? props.scan.purchased_at.substring(0, 10) : new Date().toISOString().substring(0, 10),
 });
 
+const updateItemTotal = (item) => {
+    item.total_price = Math.round((item.quantity * item.unit_price) * 100) / 100;
+    recalculateFromItems();
+};
+
+const recalculateFromItems = () => {
+    if (editableItems.value.length > 0) {
+        const sum = editableItems.value.reduce((acc, curr) => acc + (parseFloat(curr.total_price) || 0), 0);
+        form.value.amount = Math.round(sum * 100) / 100;
+    }
+};
+
+const removeItem = (index) => {
+    editableItems.value.splice(index, 1);
+    recalculateFromItems();
+};
+
 const handleConfirm = async () => {
     isSubmitting.value = true;
     try {
-        const response = await window.axios.post(`/scanner/${props.scan.id}/confirm`, form.value);
+        const payload = {
+            ...form.value,
+            items: editableItems.value,
+        };
+        const response = await window.axios.post(`/scanner/${props.scan.id}/confirm`, payload);
         if (response.data?.success) {
             emit('confirmed', response.data);
         }
@@ -132,8 +165,8 @@ const handleConfirm = async () => {
             </div>
         </div>
 
-        <!-- Items Breakdown Drawer (Raio-X de Carrinho) -->
-        <div v-if="scan.items && scan.items.length > 0" class="pt-2">
+        <!-- Items Breakdown Drawer (Raio-X de Carrinho & Edição) -->
+        <div v-if="editableItems.length > 0" class="pt-2">
             <button 
                 type="button" 
                 @click="showItems = !showItems"
@@ -141,28 +174,80 @@ const handleConfirm = async () => {
             >
                 <div class="flex items-center gap-2">
                     <ShoppingBag class="w-4 h-4 text-emerald-400" />
-                    <span>Raio-X dos Itens do Cupom ({{ scan.items.length }} produtos encontrados)</span>
+                    <span>Produtos Encontrados na Nota ({{ editableItems.length }}) - Clique para conferir ou ajustar</span>
                 </div>
                 <component :is="showItems ? ChevronUp : ChevronDown" class="w-4 h-4 text-slate-500" />
             </button>
 
             <div v-show="showItems" class="mt-2 rounded-2xl border border-slate-800 bg-slate-950/40 overflow-hidden divide-y divide-slate-800/60 text-xs">
-                <div v-for="item in scan.items" :key="item.id" class="p-3 flex items-center justify-between">
-                    <div>
-                        <div class="font-bold text-white">{{ item.item_name }}</div>
-                        <div class="text-[10px] text-slate-400">
-                            {{ item.quantity }} {{ item.unit }} x {{ formatCurrency(item.unit_price) }}
+                <div v-for="(item, idx) in editableItems" :key="idx" class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex-1 min-w-0">
+                        <input 
+                            v-model="item.item_name"
+                            type="text"
+                            placeholder="Nome do produto"
+                            class="w-full bg-slate-900 border border-slate-700/60 rounded-lg px-2.5 py-1 text-xs text-white font-semibold focus:outline-none focus:border-emerald-500"
+                        />
+                        <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                            <label class="text-[10px] text-slate-400 flex items-center gap-1">
+                                Qtd:
+                                <input 
+                                    v-model.number="item.quantity"
+                                    type="number"
+                                    step="0.001"
+                                    min="0.001"
+                                    @input="updateItemTotal(item)"
+                                    class="w-16 bg-slate-900 border border-slate-700/60 rounded px-1.5 py-0.5 text-xs text-white text-center"
+                                />
+                            </label>
+
+                            <label class="text-[10px] text-slate-400 flex items-center gap-1">
+                                Unit (R$):
+                                <input 
+                                    v-model.number="item.unit_price"
+                                    type="number"
+                                    step="0.01"
+                                    @input="updateItemTotal(item)"
+                                    class="w-20 bg-slate-900 border border-slate-700/60 rounded px-1.5 py-0.5 text-xs text-white text-center"
+                                />
+                            </label>
+
+                            <select
+                                v-model="item.item_category"
+                                class="bg-slate-900 border border-slate-700/60 rounded px-2 py-0.5 text-[10px] text-slate-300"
+                            >
+                                <option value="alimentacao_essencial">Essencial</option>
+                                <option value="superfluo">Supérfluo / Impulso</option>
+                                <option value="limpeza">Limpeza</option>
+                                <option value="bebidas">Bebidas</option>
+                                <option value="outros">Outros</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold"
-                            :class="item.item_category === 'superfluo' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-800 text-slate-300'"
+
+                    <div class="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-400 block sm:hidden">Total Item:</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-xs text-slate-400 font-bold">R$</span>
+                                <input 
+                                    v-model.number="item.total_price"
+                                    type="number"
+                                    step="0.01"
+                                    @input="recalculateFromItems"
+                                    class="w-20 bg-slate-900 border border-emerald-500/40 rounded-lg px-2 py-1 text-xs text-emerald-300 font-bold font-display text-right focus:border-emerald-400"
+                                />
+                            </div>
+                        </div>
+
+                        <button 
+                            type="button"
+                            @click="removeItem(idx)"
+                            class="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                            title="Remover este item da nota"
                         >
-                            {{ item.item_category === 'superfluo' ? 'Supérfluo' : 'Essencial' }}
-                        </span>
-                        <span class="font-bold text-white font-display">
-                            {{ formatCurrency(item.total_price) }}
-                        </span>
+                            <Trash2 class="w-3.5 h-3.5" />
+                        </button>
                     </div>
                 </div>
             </div>

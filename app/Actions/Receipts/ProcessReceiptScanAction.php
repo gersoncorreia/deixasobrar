@@ -67,13 +67,19 @@ class ProcessReceiptScanAction
         // 4. Create items
         if (!empty($extracted['items']) && is_array($extracted['items'])) {
             foreach ($extracted['items'] as $item) {
+                $qty = (float) ($item['qty'] ?? 1.0);
+                $unitPrice = (float) ($item['price'] ?? 0.0);
+                $totalPrice = isset($item['total_price']) && (float) $item['total_price'] > 0
+                    ? (float) $item['total_price']
+                    : round($qty * $unitPrice, 2);
+
                 ReceiptItem::create([
                     'receipt_scan_id' => $scan->id,
                     'item_name' => $item['name'] ?? 'Item',
-                    'quantity' => (float) ($item['qty'] ?? 1.0),
+                    'quantity' => $qty,
                     'unit' => $item['unit'] ?? 'UN',
-                    'unit_price' => (float) ($item['price'] ?? 0.0),
-                    'total_price' => (float) (($item['qty'] ?? 1) * ($item['price'] ?? 0)),
+                    'unit_price' => $unitPrice,
+                    'total_price' => $totalPrice,
                     'item_category' => $item['category'] ?? 'alimentacao_essencial',
                 ]);
             }

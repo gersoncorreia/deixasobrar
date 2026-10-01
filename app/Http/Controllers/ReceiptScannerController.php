@@ -44,6 +44,30 @@ class ReceiptScannerController extends Controller
 
         $quota = $this->quotaService->checkOcrQuota($user);
 
+        // Agregação dos produtos mais comprados em cupons para análise do usuário
+        $topProducts = \App\Models\ReceiptItem::whereHas('receiptScan', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })
+            ->selectRaw("item_name, SUM(quantity) as total_qty, SUM(total_price) as total_spent, COUNT(*) as occurrences, MAX(item_category) as category")
+            ->groupBy('item_name')
+            ->orderByDesc('total_spent')
+            ->limit(20)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->item_name,
+                    'quantity' => (float) $item->total_qty,
+                    'total_spent' => round((float) $item->total_spent, 2),
+                    'occurrences' => (int) $item->occurrences,
+                    'category' => $item->category,
+                ];
+            });
+
+        $totalScansCount = ReceiptScan::where('user_id', $user->id)->count();
+        $totalItemsCount = (int) \App\Models\ReceiptItem::whereHas('receiptScan', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->sum('quantity');
+
         return Inertia::render('Scanner/Index', [
             'user' => [
                 'id' => $user->id,
@@ -54,6 +78,9 @@ class ReceiptScannerController extends Controller
             'accounts' => $accounts,
             'categories' => $categories,
             'quota' => $quota,
+            'topProducts' => $topProducts,
+            'totalScansCount' => $totalScansCount,
+            'totalItemsCount' => $totalItemsCount,
         ]);
     }
 
@@ -124,9 +151,49 @@ class ReceiptScannerController extends Controller
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'transaction_date' => ['required', 'date'],
+            'items' => ['nullable', 'array'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.item_name' => ['required', 'string', 'max:255'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.001'],
+            'items.*.unit_price' => ['nullable', 'numeric'],
+            'items.*.total_price' => ['required', 'numeric'],
+            'items.*.item_category' => ['nullable', 'string'],
         ]);
 
         $account = Account::findOrFail($validated['account_id']);
+
+        // Update items if modified in review modal
+        if (!empty($validated['items'])) {
+            $updatedItemIds = [];
+            foreach ($validated['items'] as $itemData) {
+                if (!empty($itemData['id'])) {
+                    $item = \App\Models\ReceiptItem::where('receipt_scan_id', $receiptScan->id)
+                        ->where('id', $itemData['id'])
+                        ->first();
+                    if ($item) {
+                        $item->update([
+                            'item_name' => $itemData['item_name'],
+                            'quantity' => (float) $itemData['quantity'],
+                            'unit_price' => (float) ($itemData['unit_price'] ?? 0.0),
+                            'total_price' => (float) $itemData['total_price'],
+                            'item_category' => $itemData['item_category'] ?? 'alimentacao_essencial',
+                        ]);
+                        $updatedItemIds[] = $item->id;
+                    }
+                } else {
+                    $newItem = \App\Models\ReceiptItem::create([
+                        'receipt_scan_id' => $receiptScan->id,
+                        'item_name' => $itemData['item_name'],
+                        'quantity' => (float) $itemData['quantity'],
+                        'unit' => 'UN',
+                        'unit_price' => (float) ($itemData['unit_price'] ?? 0.0),
+                        'total_price' => (float) $itemData['total_price'],
+                        'item_category' => $itemData['item_category'] ?? 'alimentacao_essencial',
+                    ]);
+                    $updatedItemIds[] = $newItem->id;
+                }
+            }
+        }
 
         // Create transaction
         $transaction = Transaction::create([
@@ -143,8 +210,10 @@ class ReceiptScannerController extends Controller
         // Decrement account balance
         $account->decrement('current_balance', abs((float) $validated['amount']));
 
-        // Link scan
+        // Link scan & update total amount
         $receiptScan->update([
+            'total_amount' => abs((float) $validated['amount']),
+            'merchant_name' => $validated['description'],
             'transaction_id' => $transaction->id,
             'match_status' => 'manual_created',
         ]);

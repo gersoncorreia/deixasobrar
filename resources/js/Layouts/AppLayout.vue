@@ -51,6 +51,7 @@ const navItems = [
 
 const secondaryNavItems = [
     { name: 'Meus Bancos & Contas', href: '/contas', icon: Building2 },
+    { name: 'Scanner & O Que Mais Compro', href: '/scanner', icon: Camera },
     { name: 'Meu Plano', href: '/assinatura', icon: CreditCard },
 ];
 

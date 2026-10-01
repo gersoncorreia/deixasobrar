@@ -40,6 +40,7 @@ const mainLinks = [
     { name: 'Extrato & Gastos', desc: 'Suas compras, extratos e comprovantes', href: '/transacoes', icon: ArrowLeftRight, color: 'text-blue-400', bg: 'bg-blue-500/10' },
     { name: 'Contas Fixas', desc: 'Aluguel, luz, água e contas obrigatórias', href: '/blindagem', icon: ShieldCheck, color: 'text-amber-400', bg: 'bg-amber-500/10' },
     { name: 'Para Onde Foi?', desc: 'Descubra onde seu dinheiro está sumindo', href: '/vazamentos', icon: Flame, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+    { name: 'Scanner & O Que Mais Compro', desc: 'Foto de cupom e raio-x de produtos', href: '/scanner', icon: Camera, color: 'text-teal-400', bg: 'bg-teal-500/10' },
 ];
 
 const accountLinks = [

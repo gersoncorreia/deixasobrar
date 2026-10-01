@@ -57,25 +57,43 @@
     * **No Celular**: Adicionado botão destacado em vermelho `⚠️ Zerar Dados & Recomeçar` dentro do menu gaveta (aberto pelo botão `Menu` no rodapé).
     * **No Notebook/Desktop**: Adicionado botão `⚙️ Configurações & Zerar Dados` no cabeçalho superior e no menu lateral sob *"Minha Conta"*.
 
+### 4. Aperfeiçoamento do Scanner OCR e Análise de Produtos ("O Que Mais Compro")
+* **Problema Identificado**:
+  * Em cupons fiscais brasileiros, descontos de clube e produtos pesados (kg) causavam divergência entre a soma dos itens e o valor final cobrado.
+  * Os itens extraídos da nota ficavam guardados no banco, mas não havia uma visualização acessível para o usuário saber o que mais compra na feira/mercado, nem como corrigir itens caso a foto ficasse borrada.
+* **Ações Tomadas**:
+  1. **Motor Visual com Reconciliação Matemática (`VisionOcrService`)**:
+     * Prompt de IA atualizado para extrair `subtotal`, `discount` (descontos de clube) e o `total_price` exato impresso na linha de cada produto.
+     * Reconciliação matemática inteligente: se houver centavos de arredondamento ou desconto global, o total é calibrado automaticamente com a soma real.
+     * Salva o `total_price` exato no modelo `ReceiptItem`.
+  2. **Edição Rápida de Itens no Card de Revisão (`ReceiptReviewCard.vue`)**:
+     * Na conferência logo após tirar a foto, o usuário pode editar o nome do produto, quantidade, preço unitário, total do item ou excluir itens ilegíveis.
+     * O total da nota recalcula em tempo real conforme o usuário ajusta os itens.
+  3. **Nova Tela / Aba "O Que Mais Compro" (`Scanner/Index.vue`)**:
+     * Criada visualização direta dividida em abas:
+       * **Notas & Comprovantes**: Histórico de notas com foto e botão de visualização detalhada.
+       * **O Que Mais Compro**: Ranking dos produtos mais comprados (quantidade acumulada, quantas vezes comprou, total gasto e classificação entre essencial/supérfluo).
+     * Atalhos diretos adicionados no menu gaveta do celular e no menu lateral do notebook ("Scanner & O Que Mais Compro").
+
 ---
 
 ## 🛠️ Arquivos Chave Modificados e Responsabilidades
 
 | Arquivo | Finalidade |
 | :--- | :--- |
-| `app/Http/Controllers/StatementController.php` | Rotas de listagem de extratos recentes e método `destroy` com rollback de saldo. |
-| `app/Http/Controllers/DashboardController.php` | Método `resetData` com opções de limpeza e validação da trava `ZERAR`. |
-| `routes/web.php` | Rotas `/extratos/recentes`, `/extratos/importacao/{id}` e `/configuracoes/reset-dados`. |
-| `resources/js/Components/Mobile/MobileQuickActionsGrid.vue` | Barra simplificada com 2 botões de ação essenciais. |
-| `resources/js/Components/Dashboard/SafeToSpendGauge.vue` | Cartão principal limpo, com semáforo simplificado e atalho de configuração. |
-| `resources/js/Components/Financial/PreferencesModal.vue` | Modal com ciclo salarial e sanfona de confirmação segura para zerar dados. |
-| `resources/js/Components/Mobile/MobileMenuDrawer.vue` | Gaveta mobile com acesso direto a "Zerar Dados & Recomeçar". |
-| `resources/js/Layouts/AppLayout.vue` | Menu lateral desktop com "Configurações & Zerar" e escuta global de eventos. |
-| `resources/js/Pages/Dashboard.vue` | Painel central com abas responsivas (desktop) e botão de configurações no cabeçalho. |
+| `app/Services/VisionOcrService.php` | Motor OCR com prompt para descontos, totais de linha e reconciliação matemática. |
+| `app/Actions/Receipts/ProcessReceiptScanAction.php` | Persistência de `ReceiptScan` e de `ReceiptItem` com cálculo preciso de `total_price`. |
+| `app/Http/Controllers/ReceiptScannerController.php` | Atualização de itens editados na confirmação e agregação de dados para "O Que Mais Compro". |
+| `resources/js/Components/Scanner/ReceiptReviewCard.vue` | Interface de revisão de comprovante com edição e recálculo dinâmico de itens. |
+| `resources/js/Pages/Scanner/Index.vue` | Tela com abas para histórico de comprovantes e ranking "O Que Mais Compro". |
+| `resources/js/Components/Mobile/MobileMenuDrawer.vue` | Atalho para "Scanner & O Que Mais Compro" e "Zerar Dados & Recomeçar" no celular. |
+| `resources/js/Layouts/AppLayout.vue` | Menu lateral com atalho para Scanner e escuta global para o modal de preferências. |
+| `app/Http/Controllers/StatementController.php` | Rotas de extratos recentes e estorno seguro via `destroy`. |
+| `app/Http/Controllers/DashboardController.php` | Lógica de reset e higienização de base (`resetData`). |
 
 ---
 
 ## 🚀 Próximos Passos Sugeridos / Onde Paramos
-1. **Validar no Dispositivo do Usuário**: Coletar feedback do usuário sobre a usabilidade da nova tela inicial mobile e desktop.
-2. **Refinamento do Leitor de Cupom / OCR**: Garantir que a leitura por foto/câmera permaneça rápida e intuitiva para quem não quer digitar nada manualmente.
-3. **Alertas Pré-Vencimento Simplificados**: Refinar notificações automáticas quando contas fixas estiverem próximas do vencimento sem que o usuário precise procurar na tela.
+1. **Testar com Cupons Físicos do Usuário**: Fazer o upload de uma nota fiscal real para conferir a precisão da leitura com descontos e o preenchimento automático do ranking "O Que Mais Compro".
+2. **Alertas Preventivos de Contas Fixas**: Refinar avisos inteligentes antes da data de vencimento.
+

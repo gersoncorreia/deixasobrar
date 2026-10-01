@@ -18,7 +18,9 @@ import {
     Plus,
     ExternalLink,
     Eye,
-    Receipt
+    ShoppingBag,
+    TrendingUp,
+    Layers
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -27,10 +29,14 @@ const props = defineProps({
     accounts: Array,
     categories: Array,
     quota: Object,
+    topProducts: Array,
+    totalScansCount: Number,
+    totalItemsCount: Number,
 });
 
 const { formatCurrency } = useCurrencyFormat();
 
+const activeTab = ref('history'); // 'history' | 'top_products'
 const isScannerModalOpen = ref(false);
 const activeScan = ref(null);
 const matchCandidates = ref([]);
@@ -143,15 +149,48 @@ const deleteScan = (scan) => {
                 />
             </div>
 
-            <!-- History of Scanned Receipts Table -->
-            <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+            <!-- Tabs: Comprovantes Salvos vs O Que Mais Compro (Raio-X de Itens) -->
+            <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md">
+                <button
+                    @click="activeTab = 'history'"
+                    type="button"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+                    :class="activeTab === 'history'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
+                >
+                    <FileText class="w-4 h-4" />
+                    <span>Notas & Comprovantes</span>
+                    <span v-if="totalScansCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
+                        {{ totalScansCount }}
+                    </span>
+                </button>
+
+                <button
+                    @click="activeTab = 'top_products'"
+                    type="button"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+                    :class="activeTab === 'top_products'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
+                >
+                    <ShoppingBag class="w-4 h-4" />
+                    <span>O Que Mais Compro</span>
+                    <span v-if="totalItemsCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        {{ totalItemsCount }} itens
+                    </span>
+                </button>
+            </div>
+
+            <!-- TAB 1: History of Scanned Receipts Table -->
+            <div v-show="activeTab === 'history'" class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
                 <div class="p-5 border-b border-slate-800 flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                             <FileText class="w-4 h-4 text-emerald-400" />
                             <span>Comprovantes & Notas Capturadas</span>
                         </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Histórico auditável com foto original e conferência</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Histórico auditável com conferência de itens e valores</p>
                     </div>
                 </div>
 
@@ -261,6 +300,116 @@ const deleteScan = (scan) => {
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: O Que Mais Compro (Ranking dos Produtos Mais Comprados em Cupons) -->
+            <div v-show="activeTab === 'top_products'" class="space-y-6">
+                <!-- Summary KPI Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/60 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                            <ShoppingBag class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 font-bold block">Produtos Diferentes</span>
+                            <span class="text-xl font-extrabold text-white">
+                                {{ topProducts?.length || 0 }} itens cadastrados
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/60 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0">
+                            <Layers class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 font-bold block">Unidades Escaneadas</span>
+                            <span class="text-xl font-extrabold text-purple-300">
+                                {{ totalItemsCount }} itens lidos
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/60 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center shrink-0">
+                            <TrendingUp class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <span class="text-xs text-slate-400 font-bold block">Gasto Total Acumulado</span>
+                            <span class="text-xl font-extrabold text-emerald-400 font-display">
+                                {{ formatCurrency(topProducts?.reduce((acc, p) => acc + (p.total_spent || 0), 0) || 0) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State for Top Products -->
+                <div v-if="!topProducts || topProducts.length === 0" class="glass-panel p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-3">
+                        <ShoppingBag class="w-7 h-7" />
+                    </div>
+                    <h4 class="text-sm font-bold text-white">Nenhum produto analisado ainda</h4>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                        Quando você escanear cupons de supermercado, a inteligência extrai cada item (arroz, feijão, sabão, etc.) e monta aqui o ranking do que você mais compra.
+                    </p>
+                </div>
+
+                <!-- Products Table -->
+                <div v-else class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+                    <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <TrendingUp class="w-4 h-4 text-emerald-400" />
+                                <span>Ranking dos Produtos Mais Comprados</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Onde o dinheiro da sua feira e mercado mais se concentra</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900/80 text-slate-400 border-b border-slate-800">
+                                <tr>
+                                    <th class="p-4 font-bold w-14">#</th>
+                                    <th class="p-4 font-bold">Produto</th>
+                                    <th class="p-4 font-bold text-center">Quantas Vezes Comprou</th>
+                                    <th class="p-4 font-bold text-center">Qtd Total</th>
+                                    <th class="p-4 font-bold text-right">Total Gasto</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+                                <tr v-for="(prod, idx) in topProducts" :key="idx" class="hover:bg-slate-900/30 transition-colors">
+                                    <td class="p-4 font-bold">
+                                        <span 
+                                            class="w-7 h-7 rounded-lg text-xs flex items-center justify-center font-black"
+                                            :class="idx === 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : idx < 3 ? 'bg-slate-800 text-emerald-400' : 'text-slate-500'"
+                                        >
+                                            {{ idx + 1 }}º
+                                        </span>
+                                    </td>
+                                    <td class="p-4 font-bold text-white">
+                                        {{ prod.name }}
+                                        <span 
+                                            class="ml-2 px-2 py-0.5 rounded text-[10px] font-semibold"
+                                            :class="prod.category === 'superfluo' ? 'bg-amber-500/15 text-amber-300' : 'bg-slate-800 text-slate-400'"
+                                        >
+                                            {{ prod.category === 'superfluo' ? 'Supérfluo' : 'Essencial' }}
+                                        </span>
+                                    </td>
+                                    <td class="p-4 text-center text-slate-300 font-semibold">
+                                        {{ prod.occurrences }}x
+                                    </td>
+                                    <td class="p-4 text-center text-slate-300 font-semibold">
+                                        {{ prod.quantity }} un
+                                    </td>
+                                    <td class="p-4 text-right font-black text-rose-400 font-display text-sm">
+                                        {{ formatCurrency(prod.total_spent) }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
