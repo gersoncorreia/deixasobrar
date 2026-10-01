@@ -220,9 +220,15 @@ PROMPT;
                 $unitPrice = round($totalPrice / $qty, 2);
             }
 
-            $category = (string) ($item['category'] ?? 'alimentacao_essencial');
-            if (!in_array($category, ['alimentacao_essencial', 'limpeza', 'superfluo', 'bebidas', 'outros'])) {
-                $category = 'alimentacao_essencial';
+            $category = (string) ($item['category'] ?? '');
+            if (!in_array($category, ['alimentacao_essencial', 'limpeza', 'superfluo', 'bebidas', 'outros']) || empty($category)) {
+                $category = $this->classifyItemCategoryByName($name);
+            } else {
+                // Se a IA marcou como 'outros' ou errou em itens óbvios, refina com regras brasileiras
+                $refined = $this->classifyItemCategoryByName($name);
+                if ($category === 'outros' && $refined !== 'outros') {
+                    $category = $refined;
+                }
             }
 
             $normalizedItems[] = [
@@ -268,6 +274,37 @@ PROMPT;
             'card_last_digits' => !empty($data['card_last_digits']) ? (string) $data['card_last_digits'] : null,
             'items' => $normalizedItems,
         ];
+    }
+
+    /**
+     * Motor de categorização automática por palavras-chave brasileiras.
+     * Atribui com precisão itens de supermercado, feira, açougue, higiene e guloseimas.
+     */
+    protected function classifyItemCategoryByName(string $name): string
+    {
+        $normalized = mb_strtolower($name, 'UTF-8');
+
+        // Supérfluo / Guloseimas / Petiscos
+        if (preg_match('/(cheetos|doritos|pipoca|doce|chocolate|bombom|bala|chiclete|salgadinho|biscoito recheado|bolacha|wafer|sorvete|picolé|sobremesa|nutella|marshmallow|pirulito)/i', $normalized)) {
+            return 'superfluo';
+        }
+
+        // Bebidas (Refrigerantes, Cervejas, Vinhos, Sucos)
+        if (preg_match('/(coca[- ]cola|pepsi|guaraná|fanta|cerveja|heineken|brahma|skol|amstel|vinho|vodka|whisky|suco|refrigerante|energético|red bull|monster|água mineral|h2oh)/i', $normalized)) {
+            return 'bebidas';
+        }
+
+        // Limpeza & Higiene
+        if (preg_match('/(sabão|detergente|amaciante|desinfetante|água sanitária|esponja|shampoo|condicionador|sabonete|pasta de dente|creme dental|desodorante|papel higiênico|fralda|absorvente|lixa|inseticida|limpador|vej[ao]|ypê|omo|comfort)/i', $normalized)) {
+            return 'limpeza';
+        }
+
+        // Alimentação Essencial (Arroz, Feijão, Carnes, Pães, Leite, Queijos, Frutas, Ovos, etc.)
+        if (preg_match('/(pão|leite|arroz|feijão|óleo|azeite|açúcar|sal|café|manteiga|margarina|queijo|presunto|mussarela|carne|filé|frango|coxa|peito|peixe|ovos|macarrão|farinha|molho|tomate|batata|cebola|alho|banana|maçã|laranja|alface|cenoura)/i', $normalized)) {
+            return 'alimentacao_essencial';
+        }
+
+        return 'alimentacao_essencial';
     }
 
     protected function fallbackExtraction(string $imagePath, ?string $scanType): array

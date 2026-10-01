@@ -109,17 +109,35 @@
     4. `SALG CHEETOS 40G OND` - 1 UN x R$ 3,99 = R$ 3,99
     5. `PIPOCA DOCE BEBE 90G` - 1 UN x R$ 2,69 = R$ 2,29 (com desconto)
 
+### 6. Hub de Inteligência de Estabelecimentos, Comparador de Preços e Categorização Automática
+* **Data**: 01/10/2026
+* **Recursos Implementados**:
+  1. **Motor de Categorização Automática Brasileira (`classifyItemCategoryByName`)**:
+     * Classifica itens de cupom fiscal com precisão cirúrgica por expressões regulares especializadas em hábitos de compras brasileiros:
+       * **Alimentação Essencial**: Arroz, feijão, carnes, filés, pães, leite, ovos, queijo, presunto, café, etc.
+       * **Supérfluo / Impulso**: Salgadinhos (Cheetos, Doritos), chocolates, doces, pipoca doce, biscoitos, guloseimas.
+       * **Limpeza & Higiene**: Sabão, detergente, amaciante, água sanitária, pasta de dente, desodorante, etc.
+       * **Bebidas**: Refrigerantes, cervejas, sucos, energéticos, vinhos, etc.
+  2. **Barra de Busca e Filtro por Estabelecimento & CNPJ**:
+     * Implementada no topo da tela do Scanner (`Scanner/Index.vue`), permitindo filtrar notas por nome da empresa, CNPJ ou pesquisar produtos por palavra-chave.
+  3. **Nova Aba "Estabelecimentos"**:
+     * Vitrine de todas as empresas onde o usuário fez compras, com contagem de comprovantes, CNPJ oficial, data da última compra e valor total acumulado gasto em cada estabelecimento.
+  4. **Radar "Comparador de Preços" (Onde é mais barato?)**:
+     * Analisa o histórico de itens comprados em mais de um cupom, identificando o **Menor Preço** (Mais Barato) vs o **Maior Preço** (Mais Caro), exibindo a economia percentual e em reais, a unidade (`UN` ou `KG`) e o estabelecimento vencedor.
+  5. **100% de Aprovação nos Testes Automatizados**:
+     * 63 testes com 464 asserções aprovados com sucesso (`PASS`).
+
 ---
 
 ## 🛠️ Arquivos Chave Modificados e Responsabilidades
 
 | Arquivo | Finalidade |
 | :--- | :--- |
-| `app/Services/VisionOcrService.php` | Redimensionamento GD prévio, cadeia resiliente de modelos, timeout de 60s e prompt completo para NFC-e. |
+| `app/Services/VisionOcrService.php` | Redimensionamento GD prévio, cadeia resiliente de modelos, timeout de 60s, prompt NFC-e e motor de categorização automática. |
 | `app/Actions/Receipts/ProcessReceiptScanAction.php` | Persistência de `ReceiptScan` e de `ReceiptItem` com cálculo preciso de `total_price`. |
-| `app/Http/Controllers/ReceiptScannerController.php` | Atualização de itens editados na confirmação e agregação de dados para "O Que Mais Compro". |
+| `app/Http/Controllers/ReceiptScannerController.php` | Filtros por estabelecimento/CNPJ, radar de comparação de preços e agregação de estabelecimentos. |
 | `resources/js/Components/Scanner/ReceiptReviewCard.vue` | Exibição de forma de pagamento, final do cartão, desconto e recálculo dinâmico de itens. |
-| `resources/js/Pages/Scanner/Index.vue` | Tela com abas para histórico de comprovantes e ranking "O Que Mais Compro". |
+| `resources/js/Pages/Scanner/Index.vue` | 4 abas integradas: Notas, O Que Mais Compro, Comparador de Preços e Estabelecimentos. |
 | `resources/js/Components/Mobile/MobileMenuDrawer.vue` | Atalho para "Scanner & O Que Mais Compro" e "Zerar Dados & Recomeçar" no celular. |
 | `resources/js/Layouts/AppLayout.vue` | Menu lateral com atalho para Scanner e escuta global para o modal de preferências. |
 | `app/Http/Controllers/StatementController.php` | Rotas de extratos recentes e estorno seguro via `destroy`. |
@@ -132,5 +150,6 @@
    * O usuário deve rodar `git pull origin main` no terminal cPanel/SSH da HostGator e `php artisan config:cache` (ou recarregar arquivos modificados).
 2. **Realizar Novo Teste via Celular**: Escanear a nota para validar a experiência ao vivo em produção.
 3. **Alertas Preventivos de Contas Fixas**: Refinar avisos inteligentes antes da data de vencimento.
+
 
 

@@ -20,7 +20,14 @@ import {
     Eye,
     ShoppingBag,
     TrendingUp,
-    Layers
+    Layers,
+    Store,
+    Scale,
+    Search,
+    Filter,
+    X,
+    ArrowDownRight,
+    ArrowUpRight
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -30,18 +37,40 @@ const props = defineProps({
     categories: Array,
     quota: Object,
     topProducts: Array,
+    merchants: Array,
+    priceComparison: Array,
+    filters: Object,
     totalScansCount: Number,
     totalItemsCount: Number,
 });
 
 const { formatCurrency } = useCurrencyFormat();
 
-const activeTab = ref('history'); // 'history' | 'top_products'
+const activeTab = ref('history'); // 'history' | 'top_products' | 'price_comparison' | 'merchants'
 const isScannerModalOpen = ref(false);
 const activeScan = ref(null);
 const matchCandidates = ref([]);
 const isDetailModalOpen = ref(false);
 const selectedScan = ref(null);
+
+const selectedMerchant = ref(props.filters?.merchant || '');
+const searchQuery = ref(props.filters?.search || '');
+
+const applyFilters = () => {
+    router.get('/scanner', {
+        merchant: selectedMerchant.value || undefined,
+        search: searchQuery.value || undefined,
+    }, {
+        preserveState: true,
+        preserveScroll: true,
+    });
+};
+
+const clearFilters = () => {
+    selectedMerchant.value = '';
+    searchQuery.value = '';
+    applyFilters();
+};
 
 const openDetailModal = (scan) => {
     selectedScan.value = scan;
@@ -149,35 +178,117 @@ const deleteScan = (scan) => {
                 />
             </div>
 
-            <!-- Tabs: Comprovantes Salvos vs O Que Mais Compro (Raio-X de Itens) -->
-            <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md">
+            <!-- Search and Merchant Filter Bar -->
+            <div class="glass-panel p-4 rounded-2xl border border-slate-800 bg-slate-900/90 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                <div class="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <Search class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input
+                            v-model="searchQuery"
+                            @keyup.enter="applyFilters"
+                            type="text"
+                            placeholder="Buscar por mercado, CNPJ ou produto..."
+                            class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                        />
+                    </div>
+
+                    <!-- Merchant Selector -->
+                    <div class="relative sm:w-64">
+                        <Store class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <select
+                            v-model="selectedMerchant"
+                            @change="applyFilters"
+                            class="w-full bg-slate-950 border border-slate-700/80 rounded-xl pl-9 pr-8 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer appearance-none"
+                        >
+                            <option value="">Todos os Estabelecimentos</option>
+                            <option v-for="m in merchants" :key="m.merchant_name" :value="m.merchant_name">
+                                {{ m.merchant_name }} ({{ m.total_scans }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Button -->
+                    <button
+                        @click="applyFilters"
+                        class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-colors cursor-pointer flex items-center justify-center gap-2"
+                    >
+                        <Filter class="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Filtrar</span>
+                    </button>
+
+                    <!-- Clear Filter -->
+                    <button
+                        v-if="selectedMerchant || searchQuery"
+                        @click="clearFilters"
+                        class="px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer flex items-center justify-center gap-1"
+                        title="Limpar filtros"
+                    >
+                        <X class="w-3.5 h-3.5" />
+                        <span>Limpar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabs: Comprovantes, Mais Comprados, Comparador de Preços e Estabelecimentos -->
+            <div class="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md overflow-x-auto">
                 <button
                     @click="activeTab = 'history'"
                     type="button"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+                    class="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0"
                     :class="activeTab === 'history'
                         ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
                 >
                     <FileText class="w-4 h-4" />
                     <span>Notas & Comprovantes</span>
-                    <span v-if="totalScansCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
-                        {{ totalScansCount }}
+                    <span v-if="scans.total > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
+                        {{ scans.total }}
                     </span>
                 </button>
 
                 <button
                     @click="activeTab = 'top_products'"
                     type="button"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer"
+                    class="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0"
                     :class="activeTab === 'top_products'
                         ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
                 >
                     <ShoppingBag class="w-4 h-4" />
                     <span>O Que Mais Compro</span>
-                    <span v-if="totalItemsCount > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                        {{ totalItemsCount }} itens
+                    <span v-if="topProducts?.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                        {{ topProducts.length }} itens
+                    </span>
+                </button>
+
+                <button
+                    @click="activeTab = 'price_comparison'"
+                    type="button"
+                    class="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0"
+                    :class="activeTab === 'price_comparison'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
+                >
+                    <Scale class="w-4 h-4" />
+                    <span>Comparador de Preços</span>
+                    <span v-if="priceComparison?.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        Radar Ativo
+                    </span>
+                </button>
+
+                <button
+                    @click="activeTab = 'merchants'"
+                    type="button"
+                    class="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0"
+                    :class="activeTab === 'merchants'
+                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30 shadow-sm'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'"
+                >
+                    <Store class="w-4 h-4" />
+                    <span>Estabelecimentos</span>
+                    <span v-if="merchants?.length > 0" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                        {{ merchants.length }}
                     </span>
                 </button>
             </div>
@@ -409,6 +520,151 @@ const deleteScan = (scan) => {
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Radar Comparador de Preços (Onde é mais barato?) -->
+            <div v-show="activeTab === 'price_comparison'" class="space-y-6">
+                <!-- Header Card -->
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                            <Scale class="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-extrabold text-white">Radar Comparador de Preços por Mercado</h3>
+                            <p class="text-xs text-slate-400">Identifique onde os produtos que você compra saem mais em conta</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div v-if="!priceComparison || priceComparison.length === 0" class="glass-panel p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-3">
+                        <Scale class="w-7 h-7" />
+                    </div>
+                    <h4 class="text-sm font-bold text-white">Ainda não há dados suficientes para comparar</h4>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                        Conforme você escanear cupons de diferentes supermercados, padarias e feiras, o sistema comparará os preços dos mesmos produtos automaticamente aqui.
+                    </p>
+                </div>
+
+                <!-- Comparison Cards Grid -->
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div 
+                        v-for="(item, idx) in priceComparison" 
+                        :key="idx"
+                        class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/70 space-y-4 hover:border-slate-700 transition-all"
+                    >
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Produto Analisado</span>
+                                <h4 class="text-sm font-extrabold text-white mt-0.5">{{ item.item_name }}</h4>
+                            </div>
+
+                            <span 
+                                v-if="item.difference > 0"
+                                class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0"
+                            >
+                                Economia de até {{ item.savings_percentage }}%
+                            </span>
+                        </div>
+
+                        <!-- Best Price vs Highest Price Cards -->
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <!-- Lowest Price (Winner) -->
+                            <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                                <div class="flex items-center gap-1 text-[10px] font-bold text-emerald-400 uppercase">
+                                    <ArrowDownRight class="w-3.5 h-3.5" />
+                                    <span>Mais Barato</span>
+                                </div>
+                                <div class="text-base font-black text-white font-display mt-0.5">
+                                    {{ formatCurrency(item.min_price) }} <span class="text-[10px] font-normal text-slate-400">/ {{ item.unit }}</span>
+                                </div>
+                                <div class="text-[10px] text-emerald-300 font-semibold truncate mt-1" :title="item.best_merchant">
+                                    🏪 {{ item.best_merchant }}
+                                </div>
+                            </div>
+
+                            <!-- Highest Price -->
+                            <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+                                <div class="flex items-center gap-1 text-[10px] font-bold text-rose-400 uppercase">
+                                    <ArrowUpRight class="w-3.5 h-3.5" />
+                                    <span>Mais Caro</span>
+                                </div>
+                                <div class="text-base font-black text-slate-300 font-display mt-0.5">
+                                    {{ formatCurrency(item.max_price) }} <span class="text-[10px] font-normal text-slate-400">/ {{ item.unit }}</span>
+                                </div>
+                                <div class="text-[10px] text-slate-400 font-semibold truncate mt-1" :title="item.highest_merchant">
+                                    🏪 {{ item.highest_merchant }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Footnote -->
+                        <div class="text-[11px] text-slate-400 pt-1 flex items-center justify-between border-t border-slate-800/80">
+                            <span>Visto em {{ item.merchants_count }} estabelecimento(s)</span>
+                            <span v-if="item.difference > 0" class="text-emerald-400 font-bold">
+                                Diferença de {{ formatCurrency(item.difference) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Estabelecimentos & Empresas Analisadas -->
+            <div v-show="activeTab === 'merchants'" class="space-y-6">
+                <!-- Empty State -->
+                <div v-if="!merchants || merchants.length === 0" class="glass-panel p-12 text-center rounded-2xl border border-slate-800 space-y-3">
+                    <div class="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 text-slate-500 flex items-center justify-center mx-auto mb-3">
+                        <Store class="w-7 h-7" />
+                    </div>
+                    <h4 class="text-sm font-bold text-white">Nenhum estabelecimento registrado</h4>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                        Ao fotografar cupons fiscais, os nomes das empresas e CNPJs são identificados automaticamente e agrupados aqui.
+                    </p>
+                </div>
+
+                <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div 
+                        v-for="m in merchants" 
+                        :key="m.merchant_name"
+                        class="glass-panel p-5 rounded-2xl border border-slate-800 bg-slate-900/70 space-y-4 hover:border-slate-700 transition-all flex flex-col justify-between"
+                    >
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 border border-blue-500/30 text-blue-300">
+                                    {{ m.total_scans }} {{ m.total_scans === 1 ? 'comprovante' : 'comprovantes' }}
+                                </span>
+                                <span class="text-[10px] text-slate-500">
+                                    Última: {{ m.last_purchase_at ? m.last_purchase_at.substring(0, 10) : '-' }}
+                                </span>
+                            </div>
+
+                            <h4 class="text-sm font-black text-white line-clamp-2">
+                                {{ m.merchant_name }}
+                            </h4>
+                            <p class="text-[11px] text-slate-400 mt-1">
+                                CNPJ: <strong class="text-slate-300">{{ m.cnpj || 'Não informado na nota' }}</strong>
+                            </p>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block">Total Gasto</span>
+                                <span class="text-base font-black text-emerald-400 font-display">
+                                    {{ formatCurrency(m.total_spent) }}
+                                </span>
+                            </div>
+
+                            <button
+                                @click="selectedMerchant = m.merchant_name; applyFilters(); activeTab = 'history'"
+                                class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-emerald-500/20 text-xs font-bold text-slate-200 hover:text-emerald-300 transition-colors cursor-pointer"
+                            >
+                                Ver Notas →
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

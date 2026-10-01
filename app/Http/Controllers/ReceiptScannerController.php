@@ -32,10 +32,28 @@ class ReceiptScannerController extends Controller
         /** @var User $user */
         $user = Auth::user() ?? User::first();
 
-        $scans = ReceiptScan::where('user_id', $user->id)
+        $merchantFilter = $request->query('merchant');
+        $searchQuery = $request->query('search');
+
+        $scansQuery = ReceiptScan::where('user_id', $user->id)
             ->with(['items', 'transaction'])
-            ->orderBy('id', 'desc')
-            ->paginate(15);
+            ->orderBy('id', 'desc');
+
+        if (!empty($merchantFilter)) {
+            $scansQuery->where('merchant_name', $merchantFilter);
+        }
+
+        if (!empty($searchQuery)) {
+            $scansQuery->where(function ($q) use ($searchQuery) {
+                $q->where('merchant_name', 'like', "%{$searchQuery}%")
+                  ->orWhere('merchant_tax_id', 'like', "%{$searchQuery}%")
+                  ->orWhereHas('items', function ($itemQ) use ($searchQuery) {
+                      $itemQ->where('item_name', 'like', "%{$searchQuery}%");
+                  });
+            });
+        }
+
+        $scans = $scansQuery->paginate(15)->withQueryString();
 
         $accounts = $user->accounts()->get();
         $categories = Category::where('user_id', $user->id)
@@ -44,14 +62,40 @@ class ReceiptScannerController extends Controller
 
         $quota = $this->quotaService->checkOcrQuota($user);
 
+        // Lista de estabelecimentos únicos do usuário com contagem e total gasto
+        $merchants = ReceiptScan::where('user_id', $user->id)
+            ->whereNotNull('merchant_name')
+            ->selectRaw("merchant_name, MAX(merchant_tax_id) as cnpj, COUNT(*) as total_scans, SUM(total_amount) as total_spent, MAX(purchased_at) as last_purchase_at")
+            ->groupBy('merchant_name')
+            ->orderByDesc('total_spent')
+            ->get()
+            ->map(function ($m) {
+                return [
+                    'merchant_name' => $m->merchant_name,
+                    'cnpj' => $m->cnpj,
+                    'total_scans' => (int) $m->total_scans,
+                    'total_spent' => round((float) $m->total_spent, 2),
+                    'last_purchase_at' => $m->last_purchase_at,
+                ];
+            });
+
         // Agregação dos produtos mais comprados em cupons para análise do usuário
-        $topProducts = \App\Models\ReceiptItem::whereHas('receiptScan', function ($q) use ($user) {
+        $topProductsQuery = \App\Models\ReceiptItem::whereHas('receiptScan', function ($q) use ($user, $merchantFilter) {
                 $q->where('user_id', $user->id);
-            })
+                if (!empty($merchantFilter)) {
+                    $q->where('merchant_name', $merchantFilter);
+                }
+            });
+
+        if (!empty($searchQuery)) {
+            $topProductsQuery->where('item_name', 'like', "%{$searchQuery}%");
+        }
+
+        $topProducts = $topProductsQuery
             ->selectRaw("item_name, SUM(quantity) as total_qty, SUM(total_price) as total_spent, COUNT(*) as occurrences, MAX(item_category) as category")
             ->groupBy('item_name')
             ->orderByDesc('total_spent')
-            ->limit(20)
+            ->limit(30)
             ->get()
             ->map(function ($item) {
                 return [
@@ -62,6 +106,58 @@ class ReceiptScannerController extends Controller
                     'category' => $item->category,
                 ];
             });
+
+        // Radar Comparador de Preços: produtos comprados em diferentes notas com variação de preços
+        $priceComparison = \App\Models\ReceiptItem::join('receipt_scans', 'receipt_items.receipt_scan_id', '=', 'receipt_scans.id')
+            ->where('receipt_scans.user_id', $user->id)
+            ->where('receipt_items.unit_price', '>', 0)
+            ->select([
+                'receipt_items.item_name',
+                'receipt_items.unit_price',
+                'receipt_items.unit',
+                'receipt_scans.merchant_name',
+                'receipt_scans.purchased_at',
+            ])
+            ->orderBy('receipt_items.item_name')
+            ->orderBy('receipt_items.unit_price')
+            ->get()
+            ->groupBy('item_name')
+            ->map(function ($group, $itemName) {
+                $prices = $group->pluck('unit_price')->unique()->values();
+                $minEntry = $group->sortBy('unit_price')->first();
+                $maxEntry = $group->sortByDesc('unit_price')->first();
+                $merchantsCount = $group->pluck('merchant_name')->unique()->count();
+
+                $history = $group->map(function ($entry) {
+                    return [
+                        'merchant' => $entry->merchant_name ?: 'Estabelecimento',
+                        'price' => (float) $entry->unit_price,
+                        'unit' => $entry->unit ?: 'UN',
+                        'date' => $entry->purchased_at ? \Carbon\Carbon::parse($entry->purchased_at)->format('d/m/Y') : null,
+                    ];
+                })->values();
+
+                $minPrice = (float) $minEntry->unit_price;
+                $maxPrice = (float) $maxEntry->unit_price;
+                $diff = round($maxPrice - $minPrice, 2);
+
+                return [
+                    'item_name' => $itemName,
+                    'unit' => $minEntry->unit ?: 'UN',
+                    'min_price' => $minPrice,
+                    'best_merchant' => $minEntry->merchant_name ?: 'Estabelecimento',
+                    'max_price' => $maxPrice,
+                    'highest_merchant' => $maxEntry->merchant_name ?: 'Estabelecimento',
+                    'difference' => $diff,
+                    'savings_percentage' => $maxPrice > 0 ? round(($diff / $maxPrice) * 100, 1) : 0,
+                    'merchants_count' => $merchantsCount,
+                    'total_records' => $group->count(),
+                    'history' => $history,
+                ];
+            })
+            ->values()
+            ->sortByDesc('difference')
+            ->values();
 
         $totalScansCount = ReceiptScan::where('user_id', $user->id)->count();
         $totalItemsCount = (int) \App\Models\ReceiptItem::whereHas('receiptScan', function ($q) use ($user) {
@@ -79,6 +175,12 @@ class ReceiptScannerController extends Controller
             'categories' => $categories,
             'quota' => $quota,
             'topProducts' => $topProducts,
+            'merchants' => $merchants,
+            'priceComparison' => $priceComparison,
+            'filters' => [
+                'merchant' => $merchantFilter,
+                'search' => $searchQuery,
+            ],
             'totalScansCount' => $totalScansCount,
             'totalItemsCount' => $totalItemsCount,
         ]);
