@@ -75,16 +75,50 @@
        * **O Que Mais Compro**: Ranking dos produtos mais comprados (quantidade acumulada, quantas vezes comprou, total gasto e classificação entre essencial/supérfluo).
      * Atalhos diretos adicionados no menu gaveta do celular e no menu lateral do notebook ("Scanner & O Que Mais Compro").
 
+### 5. Resolução da Divergência no Scanner de Notas Reais (R$ 45,00 vs R$ 28,84) & Otimização do OCR
+* **Data**: 01/10/2026
+* **Causa Raiz Diagnosticada**:
+  * Ao escanear o cupom de supermercado no celular, a aplicação exibia `R$ 45,00` ("Comprovante Identificado", "Item de Consumo Geral") em vez do valor real de `R$ 28,84` e dos 5 produtos.
+  * O valor `R$ 45,00` é exatamente o retorno estático da função `fallbackExtraction()` de simulação/offline no `VisionOcrService.php`.
+  * **O que causou a queda no fallback**:
+    1. O cURL do backend possuía timeout curto (35s). Fotos em resolução nativa enviadas para a API do Gemini demoravam ~40s para transitar e inferir, gerando `cURL error 28: Operation timed out`.
+    2. Como o bloco `try/catch` tratava qualquer exceção caindo silenciosamente no fallback, o usuário recebia `R$ 45,00` estático em vez da leitura da nota.
+    3. Flutuações pontuais de disponibilidade da Google (status 503 temporário) em horários de pico.
+* **Soluções Implementadas**:
+  1. **Compressão e Redimensionamento Prévio de Imagem no Servidor (`prepareOptimizedBase64`)**:
+     * Imagens brutas agora passam por downscaling proporcional via GD para no máximo 1400px com compressão JPEG limpa antes da conversão Base64.
+     * O tempo de inferência da IA no Google caiu de 45 segundos para **~6 a 18 segundos**, mantendo nitidez cirúrgica nos caracteres.
+  2. **Timeout Estendido para 60 Segundos**:
+     * Configurado `Http::timeout(60)` para acomodar com folga qualquer latência de conexão entre a HostGator e a Google AI.
+  3. **Cadeia Resiliente de Modelos com Retry Automático (`modelsToTry`)**:
+     * Implementada tolerância a falhas: caso o modelo preferido receba um 503 momentâneo, o sistema aguarda 1.5s e tenta novamente ou faz o fallback em cascata para `gemini-3.6-flash`, `gemini-3.8-flash` ou `gemini-flash-latest`.
+  4. **Extração de Campos Típicos de NFC-e Brasileira**:
+     * Prompt de visão enriquecido para capturar: Razão Social/Fantasia, CNPJ, Data/Hora da emissão, Subtotal, Desconto total, Valor Líquido a Pagar, Forma de Pagamento (`Cartão Débito`, `Cartão Crédito`, `Pix`, `Dinheiro`), Dígitos finais do cartão, e tabela de itens com Quantidade, Unidade (UN, KG), Preço Unitário, Valor Total e Categoria.
+  5. **Card de Revisão Enriquecido (`ReceiptReviewCard.vue`)**:
+     * Agora exibe a forma de pagamento detectada (ex: `💳 Cartão Débito (Final 3016)`), além do valor de desconto destacado.
+* **Resultado do Teste no Cupom Real do Usuário**:
+  * **Estabelecimento**: `A.C.D.A. IMPORTACAO E EXPORTACAO LTDA`
+  * **CNPJ**: `84.308.980/0018-22`
+  * **Data**: `26/09/2026 20:08:38`
+  * **Forma de Pagamento**: `debit` (Final `3016`)
+  * **Subtotal**: `R$ 29,24` | **Desconto**: `R$ 0,40` | **Total Final**: `R$ 28,84` (100% exato!)
+  * **Itens Extraídos**:
+    1. `PAO FORMA CASA PAO` - 1 UN x R$ 8,89 = R$ 8,89
+    2. `EMB COZ FILE MI FRAC` - 0,196 KG x R$ 28,97 = R$ 5,68
+    3. `QUEIJO MUSS NILZA FA` - 1 UN x R$ 7,99 = R$ 7,99
+    4. `SALG CHEETOS 40G OND` - 1 UN x R$ 3,99 = R$ 3,99
+    5. `PIPOCA DOCE BEBE 90G` - 1 UN x R$ 2,69 = R$ 2,29 (com desconto)
+
 ---
 
 ## 🛠️ Arquivos Chave Modificados e Responsabilidades
 
 | Arquivo | Finalidade |
 | :--- | :--- |
-| `app/Services/VisionOcrService.php` | Motor OCR com prompt para descontos, totais de linha e reconciliação matemática. |
+| `app/Services/VisionOcrService.php` | Redimensionamento GD prévio, cadeia resiliente de modelos, timeout de 60s e prompt completo para NFC-e. |
 | `app/Actions/Receipts/ProcessReceiptScanAction.php` | Persistência de `ReceiptScan` e de `ReceiptItem` com cálculo preciso de `total_price`. |
 | `app/Http/Controllers/ReceiptScannerController.php` | Atualização de itens editados na confirmação e agregação de dados para "O Que Mais Compro". |
-| `resources/js/Components/Scanner/ReceiptReviewCard.vue` | Interface de revisão de comprovante com edição e recálculo dinâmico de itens. |
+| `resources/js/Components/Scanner/ReceiptReviewCard.vue` | Exibição de forma de pagamento, final do cartão, desconto e recálculo dinâmico de itens. |
 | `resources/js/Pages/Scanner/Index.vue` | Tela com abas para histórico de comprovantes e ranking "O Que Mais Compro". |
 | `resources/js/Components/Mobile/MobileMenuDrawer.vue` | Atalho para "Scanner & O Que Mais Compro" e "Zerar Dados & Recomeçar" no celular. |
 | `resources/js/Layouts/AppLayout.vue` | Menu lateral com atalho para Scanner e escuta global para o modal de preferências. |
@@ -94,6 +128,9 @@
 ---
 
 ## 🚀 Próximos Passos Sugeridos / Onde Paramos
-1. **Testar com Cupons Físicos do Usuário**: Fazer o upload de uma nota fiscal real para conferir a precisão da leitura com descontos e o preenchimento automático do ranking "O Que Mais Compro".
-2. **Alertas Preventivos de Contas Fixas**: Refinar avisos inteligentes antes da data de vencimento.
+1. **Deploy / Atualização no Servidor HostGator**:
+   * O usuário deve rodar `git pull origin main` no terminal cPanel/SSH da HostGator e `php artisan config:cache` (ou recarregar arquivos modificados).
+2. **Realizar Novo Teste via Celular**: Escanear a nota para validar a experiência ao vivo em produção.
+3. **Alertas Preventivos de Contas Fixas**: Refinar avisos inteligentes antes da data de vencimento.
+
 

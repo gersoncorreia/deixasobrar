@@ -102,9 +102,15 @@ const handleConfirm = async () => {
                 </div>
 
                 <div>
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 mb-1">
-                        OCR Concluído com Sucesso
-                    </span>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                            OCR Concluído com Sucesso
+                        </span>
+                        <span v-if="scan.payment_method_detected" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300 capitalize">
+                            💳 {{ scan.payment_method_detected === 'debit' ? 'Cartão Débito' : (scan.payment_method_detected === 'credit' ? 'Cartão Crédito' : scan.payment_method_detected) }}
+                            <span v-if="scan.card_last_digits">(Final {{ scan.card_last_digits }})</span>
+                        </span>
+                    </div>
                     <h3 class="text-base font-extrabold text-white">Revisão do Comprovante</h3>
                     <p class="text-xs text-slate-400">Confira os valores detectados antes de salvar</p>
                 </div>
@@ -114,6 +120,9 @@ const handleConfirm = async () => {
                 <span class="text-xs text-slate-400 block">Total Identificado</span>
                 <span class="text-2xl font-black text-emerald-400 font-display">
                     {{ formatCurrency(form.amount) }}
+                </span>
+                <span v-if="scan.raw_ocr_payload?.discount > 0" class="block text-[10px] font-semibold text-teal-400">
+                    Desconto: -{{ formatCurrency(scan.raw_ocr_payload.discount) }}
                 </span>
             </div>
         </div>

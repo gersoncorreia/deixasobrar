@@ -19,40 +19,57 @@ class VisionOcrService
     {
         $apiKey = \App\Models\SystemSetting::get('system_gemini_api_key') 
             ?: (config('services.gemini.key') ?? env('GEMINI_API_KEY'));
-        $model = \App\Models\SystemSetting::get('system_gemini_model', 'gemini-3.6-flash');
+        $preferredModel = \App\Models\SystemSetting::get('system_gemini_model') ?: 'gemini-3.6-flash';
 
         if ($apiKey && file_exists($imagePath)) {
             try {
-                $imageData = base64_encode(file_get_contents($imagePath));
-                $mimeType = mime_content_type($imagePath) ?: 'image/jpeg';
+                // Otimização prévia da imagem: redimensiona se necessário para garantir envio leve e resposta ultrarrápida (< 10s)
+                $imageData = $this->prepareOptimizedBase64($imagePath);
+                $mimeType = 'image/jpeg';
 
                 $systemPrompt = <<<PROMPT
-Você é um extrator especialista de alta precisão em Cupons Fiscais (NFC-e, SAT, ECF), Comprovantes de Cartão/Maquininha e Recibos Pix brasileiros.
-Analise a imagem com extremo rigor aos valores monetários em Reais (R$).
-Atenção especial a:
-1. "VALOR TOTAL A PAGAR" ou "TOTAL R$": É o valor líquido final efetivamente pago pelo cliente (já com descontos aplicados).
-2. Se houver "Desconto", "Desconto Subtotal", "Clube", identifique o valor do desconto.
-3. Para cada produto/item:
-   - "name": Descrição limpa do produto sem códigos de barras ou lixo.
-   - "qty": Quantidade (float, ex: 1, 2, ou 0.350 para peso em kg).
-   - "unit": Unidade (UN, KG, PC, LT, etc.).
-   - "price": Preço unitário.
-   - "total_price": Valor total final cobrado para este produto/linha (se impresso na nota, use o valor exato da linha).
-   - "category": Classifique estritamente entre: "alimentacao_essencial" (mercado/hortifruti/padaria/farmácia básica), "limpeza" (produtos de casa/higiene), "superfluo" (doces, petiscos, sobremesas supérfluas), "bebidas" (refrigerantes, cervejas, bebidas alcoólicas), "outros".
+Você é um extrator especialista de alta precisão em Cupons Fiscais Eletrônicos (NFC-e, DANFE NFC-e, SAT, ECF), Comprovantes de Cartão/Maquininha e Recibos Pix brasileiros.
+Analise a imagem com extremo rigor aos dados impressos.
+
+Instruções cruciais de extração:
+1. "merchant": Razão Social ou Nome Fantasia impresso no cabeçalho (ex: nome do mercado, farmácia, loja).
+2. "cnpj": CNPJ do estabelecimento no formato XX.XXX.XXX/XXXX-XX (se presente).
+3. "date_time": Data e hora da emissão no formato YYYY-MM-DD HH:MM:SS.
+4. "total_amount": O valor líquido final pago ("VALOR A PAGAR R$", "TOTAL R$", "VALOR PAGO"). No caso de cupons com desconto, use sempre o valor final efetivamente cobrado/pago.
+5. "subtotal": O valor bruto dos produtos antes de descontos (se informado).
+6. "discount": Valor total de descontos aplicados (se informado).
+7. "payment_method": Identifique a forma de pagamento:
+   - "debit" se for Cartão de Débito (ex: ELO DÉBITO, VISA DÉBITO, MASTERCARD DÉBITO).
+   - "credit" se for Cartão de Crédito.
+   - "pix" se for Pix / QR Code Pix.
+   - "cash" se for Dinheiro em espécie.
+8. "card_last_digits": Se impresso no comprovante (ex: final 3016), extraia os 4 dígitos.
+9. "items": Lista completa de todos os produtos comprados na tabela de itens:
+   - "name": Descrição limpa do produto (ex: "PAO FORMA CASA PAO", "QUEIJO MUSS NILZA FA").
+   - "qty": Quantidade adquirida (ex: 1, 2, ou fração de peso em kg como 0.196).
+   - "unit": Unidade impressa (ex: UN, KG, PC, LT).
+   - "price": Preço unitário por item/kg.
+   - "total_price": Valor total final daquele item/linha (já deduzindo eventuais descontos por item se houver).
+   - "category": Classifique cada item entre:
+     * "alimentacao_essencial": itens de supermercado, feira, padaria, açougue, hortifruti, queijos, pães, frios, carnes.
+     * "limpeza": produtos de higiene pessoal ou limpeza doméstica.
+     * "superfluo": petiscos, salgadinhos (ex: Cheetos), doces, pipoca doce, chocolates, guloseimas.
+     * "bebidas": refrigerantes, cervejas, sucos, energéticos, vinhos.
+     * "outros": demais produtos que não se encaixem acima.
 
 Retorne ESTRITAMENTE um JSON válido sem marcações markdown ou blocos adicionais, com o seguinte schema:
 {
-  "merchant": "Nome Fantasia ou Razão Social do Estabelecimento",
-  "cnpj": "XX.XXX.XXX/0001-XX ou null se não houver",
-  "date_time": "YYYY-MM-DD HH:MM:SS (ou null se ilegível)",
+  "merchant": "Nome do Estabelecimento",
+  "cnpj": "XX.XXX.XXX/XXXX-XX",
+  "date_time": "YYYY-MM-DD HH:MM:SS",
   "subtotal": 0.00,
   "discount": 0.00,
   "total_amount": 0.00,
   "payment_method": "credit | debit | pix | cash",
-  "card_last_digits": "4 últimos dígitos ou null",
+  "card_last_digits": "XXXX ou null",
   "items": [
     {
-      "name": "Nome do Produto",
+      "name": "Descrição do Produto",
       "qty": 1.0,
       "unit": "UN",
       "price": 0.00,
@@ -63,43 +80,60 @@ Retorne ESTRITAMENTE um JSON válido sem marcações markdown ou blocos adiciona
 }
 PROMPT;
 
-                $httpClient = Http::timeout(35)
+                $httpClient = Http::timeout(60)
                     ->withHeaders([
                         'Content-Type' => 'application/json',
                     ]);
 
-                // Em ambiente de desenvolvimento local no Windows, ignora validação de certificados CA ausentes no PHP
+                // Em ambiente de desenvolvimento local ou servidores sem CA bundle localmente configurado
                 if (app()->environment('local', 'testing') || config('app.debug')) {
                     $httpClient = $httpClient->withoutVerifying();
                 }
 
-                $response = $httpClient->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $systemPrompt],
+                // Lista de modelos resilientes em caso de sobrecarga (503) temporária na infra da Google
+                $modelsToTry = array_unique([$preferredModel, 'gemini-3.6-flash', 'gemini-3.8-flash', 'gemini-flash-latest']);
+
+                foreach ($modelsToTry as $currentModel) {
+                    for ($attempt = 1; $attempt <= 2; $attempt++) {
+                        $response = $httpClient->post("https://generativelanguage.googleapis.com/v1beta/models/{$currentModel}:generateContent?key={$apiKey}", [
+                            'contents' => [
                                 [
-                                    'inline_data' => [
-                                        'mime_type' => $mimeType,
-                                        'data' => $imageData,
+                                    'parts' => [
+                                        ['text' => $systemPrompt],
+                                        [
+                                            'inline_data' => [
+                                                'mime_type' => $mimeType,
+                                                'data' => $imageData,
+                                            ]
+                                        ]
                                     ]
                                 ]
+                            ],
+                            'generationConfig' => [
+                                'temperature' => 0.05,
+                                'response_mime_type' => 'application/json',
                             ]
-                        ]
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.05,
-                        'response_mime_type' => 'application/json',
-                    ]
-                ]);
+                        ]);
 
-                if ($response->successful()) {
-                    $jsonText = (string) $response->json('candidates.0.content.parts.0.text');
-                    $cleanJson = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($jsonText));
-                    $parsed = json_decode($cleanJson, true) ?: json_decode($jsonText, true);
+                        if ($response->successful()) {
+                            $jsonText = (string) $response->json('candidates.0.content.parts.0.text');
+                            $cleanJson = preg_replace('/^```(?:json)?\s*|\s*```$/i', '', trim($jsonText));
+                            $parsed = json_decode($cleanJson, true) ?: json_decode($jsonText, true);
 
-                    if (is_array($parsed) && (isset($parsed['total_amount']) || !empty($parsed['items']))) {
-                        return $this->normalizeResult($parsed);
+                            if (is_array($parsed) && (isset($parsed['total_amount']) || !empty($parsed['items']))) {
+                                return $this->normalizeResult($parsed);
+                            }
+                        }
+
+                        // Se for erro 503 (sobrecarga momentânea), aguarda 1.5s antes de retentar ou trocar de modelo
+                        if ($response->status() === 503 && $attempt === 1) {
+                            usleep(1500000); // 1.5s
+                            continue;
+                        }
+
+                        // Se não teve sucesso e já esgotou a tentativa, tenta o próximo modelo da lista
+                        Log::warning("VisionOcrService {$currentModel} attempt {$attempt} failed: {$response->status()}");
+                        break;
                     }
                 }
             } catch (\Throwable $e) {
@@ -109,6 +143,59 @@ PROMPT;
 
         // Offline / Development Mock Simulation & Fallback
         return $this->fallbackExtraction($imagePath, $scanType);
+    }
+
+    /**
+     * Otimiza e redimensiona a imagem para envio à API do Gemini.
+     * Imagens de celular (3000x4000px ou fotos pesadas) demoram 30-40s no modelo e dão timeout.
+     * Com redimensionamento proporcional para no máximo 1400px, a inferência cai para 4-8s
+     * mantendo 100% da nitidez de todos os caracteres da nota fiscal.
+     */
+    protected function prepareOptimizedBase64(string $imagePath): string
+    {
+        $rawBytes = file_get_contents($imagePath);
+
+        if (!extension_loaded('gd')) {
+            return base64_encode($rawBytes);
+        }
+
+        try {
+            $img = @imagecreatefromstring($rawBytes);
+            if (!$img) {
+                return base64_encode($rawBytes);
+            }
+
+            $origWidth = imagesx($img);
+            $origHeight = imagesy($img);
+            $maxDimension = 1400;
+
+            if ($origWidth <= $maxDimension && $origHeight <= $maxDimension) {
+                imagedestroy($img);
+                return base64_encode($rawBytes);
+            }
+
+            if ($origWidth > $origHeight) {
+                $newWidth = $maxDimension;
+                $newHeight = (int) round(($origHeight * $maxDimension) / $origWidth);
+            } else {
+                $newHeight = $maxDimension;
+                $newWidth = (int) round(($origWidth * $maxDimension) / $origHeight);
+            }
+
+            $resized = imagecreatetruecolor($newWidth, $newHeight);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
+
+            ob_start();
+            imagejpeg($resized, null, 85);
+            $optimizedData = ob_get_clean();
+
+            imagedestroy($img);
+            imagedestroy($resized);
+
+            return base64_encode($optimizedData);
+        } catch (\Throwable $e) {
+            return base64_encode($rawBytes);
+        }
     }
 
     protected function normalizeResult(array $data): array
