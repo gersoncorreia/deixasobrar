@@ -247,6 +247,14 @@ class ReceiptScannerController extends Controller
             abort(403);
         }
 
+        // Se o account_id veio vazio ou não fornecido, seleciona automaticamente a primeira conta ativa do usuário
+        if (empty($request->input('account_id'))) {
+            $firstAccount = $user->accounts()->first();
+            if ($firstAccount) {
+                $request->merge(['account_id' => $firstAccount->id]);
+            }
+        }
+
         $validated = $request->validate([
             'account_id' => ['required', 'exists:accounts,id'],
             'category_id' => ['nullable', 'exists:categories,id'],
@@ -260,6 +268,10 @@ class ReceiptScannerController extends Controller
             'items.*.unit_price' => ['nullable', 'numeric'],
             'items.*.total_price' => ['required', 'numeric'],
             'items.*.item_category' => ['nullable', 'string'],
+        ], [
+            'account_id.required' => 'Por favor, selecione qual conta bancária debitar esta compra.',
+            'account_id.exists' => 'A conta bancária selecionada não foi encontrada.',
+            'amount.min' => 'O valor do comprovante deve ser maior que zero.',
         ]);
 
         $account = Account::findOrFail($validated['account_id']);
@@ -368,9 +380,21 @@ class ReceiptScannerController extends Controller
             abort(403);
         }
 
-        $receiptScan->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($receiptScan) {
+            // Se o comprovante gerou uma despesa na conta bancária, reverte o saldo e apaga a transação
+            if ($receiptScan->transaction) {
+                $tx = $receiptScan->transaction;
+                $account = $tx->account;
+                if ($account) {
+                    $account->increment('current_balance', abs((float) $tx->amount));
+                }
+                $tx->delete();
+            }
 
-        $msg = 'Comprovante removido com sucesso!';
+            $receiptScan->delete();
+        });
+
+        $msg = 'Comprovante removido com sucesso e saldo revertido!';
 
         if (request()->wantsJson()) {
             return response()->json(['success' => true, 'message' => $msg]);

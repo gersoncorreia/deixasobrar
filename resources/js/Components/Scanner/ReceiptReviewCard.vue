@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useCurrencyFormat } from '@/Composables/useCurrencyFormat';
+import PremiumAlertModal from '@/Components/Common/PremiumAlertModal.vue';
 import { 
     Check, 
     FileText, 
@@ -28,6 +29,22 @@ const { formatCurrency } = useCurrencyFormat();
 const showItems = ref(true);
 const isSubmitting = ref(false);
 
+const alertState = ref({
+    isOpen: false,
+    title: 'Atenção',
+    message: '',
+    type: 'error',
+});
+
+const showAlert = (message, title = 'Atenção', type = 'error') => {
+    alertState.value = {
+        isOpen: true,
+        title,
+        message,
+        type,
+    };
+};
+
 const editableItems = ref(
     (props.scan.items || []).map(i => ({
         id: i.id,
@@ -47,6 +64,17 @@ const form = ref({
     transaction_date: props.scan.purchased_at ? props.scan.purchased_at.substring(0, 10) : new Date().toISOString().substring(0, 10),
 });
 
+// Garante que a conta seja selecionada caso as contas cheguem de forma assíncrona
+watch(
+    () => props.accounts,
+    (newAccounts) => {
+        if (!form.value.account_id && newAccounts && newAccounts.length > 0) {
+            form.value.account_id = newAccounts[0].id;
+        }
+    },
+    { immediate: true }
+);
+
 const updateItemTotal = (item) => {
     item.total_price = Math.round((item.quantity * item.unit_price) * 100) / 100;
     recalculateFromItems();
@@ -65,6 +93,15 @@ const removeItem = (index) => {
 };
 
 const handleConfirm = async () => {
+    if (!form.value.account_id && props.accounts?.length) {
+        form.value.account_id = props.accounts[0].id;
+    }
+
+    if (!form.value.account_id) {
+        showAlert('Selecione uma conta para debitar este comprovante.', 'Conta não informada', 'warning');
+        return;
+    }
+
     isSubmitting.value = true;
     try {
         const payload = {
@@ -76,7 +113,11 @@ const handleConfirm = async () => {
             emit('confirmed', response.data);
         }
     } catch (err) {
-        alert(err.response?.data?.message || 'Falha ao confirmar o lançamento.');
+        showAlert(
+            err.response?.data?.message || 'Falha ao confirmar o lançamento. Por favor, tente novamente.',
+            'Erro ao Salvar',
+            'error'
+        );
     } finally {
         isSubmitting.value = false;
     }
@@ -273,6 +314,15 @@ const handleConfirm = async () => {
                 <span>{{ isSubmitting ? 'Salvando...' : 'Confirmar e Salvar Lançamento' }}</span>
             </button>
         </div>
+
+        <!-- Premium Alert Modal -->
+        <PremiumAlertModal 
+            :is-open="alertState.isOpen"
+            :title="alertState.title"
+            :message="alertState.message"
+            :type="alertState.type"
+            @close="alertState.isOpen = false"
+        />
 
     </div>
 </template>

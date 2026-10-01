@@ -12,6 +12,7 @@ import {
     Flashlight
 } from 'lucide-vue-next';
 import { compressImageFile } from '@/Utils/imageCompressor';
+import PremiumAlertModal from '@/Components/Common/PremiumAlertModal.vue';
 
 const props = defineProps({
     isOpen: Boolean,
@@ -31,6 +32,22 @@ const quotaError = ref(null);
 const isTorchSupported = ref(false);
 const isTorchOn = ref(false);
 let mediaStream = null;
+
+const alertState = ref({
+    isOpen: false,
+    title: 'Atenção',
+    message: '',
+    type: 'error',
+});
+
+const showAlert = (message, title = 'Falha na Leitura', type = 'error') => {
+    alertState.value = {
+        isOpen: true,
+        title,
+        message,
+        type,
+    };
+};
 
 const startCamera = async () => {
     streamError.value = null;
@@ -190,7 +207,11 @@ const uploadPayload = async (payload) => {
         if (err.response?.status === 403 && err.response?.data?.quota_exceeded) {
             quotaError.value = err.response.data.message;
         } else {
-            alert(err.response?.data?.message || 'Falha ao processar a leitura do cupom.');
+            showAlert(
+                err.response?.data?.message || 'Falha ao processar a leitura do cupom. Tente reenviar com uma foto mais nítida.',
+                'Falha no Scanner',
+                'error'
+            );
         }
     } finally {
         isProcessing.value = false;
@@ -375,5 +396,14 @@ onBeforeUnmount(() => {
             </div>
 
         </div>
+
+        <!-- Premium Alert Modal -->
+        <PremiumAlertModal 
+            :is-open="alertState.isOpen"
+            :title="alertState.title"
+            :message="alertState.message"
+            :type="alertState.type"
+            @close="alertState.isOpen = false"
+        />
     </div>
 </template>

@@ -6,6 +6,7 @@ import NativeScannerModal from '@/Components/Scanner/NativeScannerModal.vue';
 import ReceiptReviewCard from '@/Components/Scanner/ReceiptReviewCard.vue';
 import ReconciliationMatchCard from '@/Components/Scanner/ReconciliationMatchCard.vue';
 import ReceiptDetailModal from '@/Components/Scanner/ReceiptDetailModal.vue';
+import PremiumAlertModal from '@/Components/Common/PremiumAlertModal.vue';
 import { useCurrencyFormat } from '@/Composables/useCurrencyFormat';
 import { 
     Camera, 
@@ -97,9 +98,23 @@ const handleReconciled = () => {
     router.reload({ only: ['scans', 'quota'] });
 };
 
+const confirmDeleteModal = ref({
+    isOpen: false,
+    scanToDelete: null,
+});
+
 const deleteScan = (scan) => {
-    if (confirm('Tem certeza que deseja excluir este registro de comprovante?')) {
-        router.delete(`/scanner/${scan.id}`, { preserveScroll: true });
+    confirmDeleteModal.value = {
+        isOpen: true,
+        scanToDelete: scan,
+    };
+};
+
+const executeDeleteScan = () => {
+    if (confirmDeleteModal.value.scanToDelete) {
+        router.delete(`/scanner/${confirmDeleteModal.value.scanToDelete.id}`, { preserveScroll: true });
+        confirmDeleteModal.value.isOpen = false;
+        confirmDeleteModal.value.scanToDelete = null;
     }
 };
 </script>
@@ -683,6 +698,19 @@ const deleteScan = (scan) => {
             :is-open="isScannerModalOpen"
             @close="isScannerModalOpen = false"
             @captured="handleScanCaptured"
+        />
+
+        <!-- Confirm Delete Modal -->
+        <PremiumAlertModal 
+            :is-open="confirmDeleteModal.isOpen"
+            title="Excluir Comprovante"
+            message="Tem certeza que deseja remover este comprovante? O lançamento financeiro correspondente não será apagado caso já tenha sido conciliado."
+            type="warning"
+            confirm-text="Sim, Excluir"
+            :show-cancel="true"
+            cancel-text="Cancelar"
+            @confirm="executeDeleteScan"
+            @close="confirmDeleteModal.isOpen = false"
         />
     </AppLayout>
 </template>
