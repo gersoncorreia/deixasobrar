@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeUnmount } from 'vue';
+import { ref, watch, nextTick, onBeforeUnmount } from 'vue';
 import { 
     Camera, 
     UploadCloud, 
@@ -8,7 +8,6 @@ import {
     ScanLine, 
     Sparkles, 
     AlertCircle, 
-    SwitchCamera,
     Flashlight
 } from 'lucide-vue-next';
 import { compressImageFile } from '@/Utils/imageCompressor';
@@ -27,7 +26,6 @@ const fileInput = ref(null);
 const isStreamActive = ref(false);
 const streamError = ref(null);
 const isProcessing = ref(false);
-const facingMode = ref('environment'); // environment (traseira) | user (frontal)
 const quotaError = ref(null);
 const isTorchSupported = ref(false);
 const isTorchOn = ref(false);
@@ -66,22 +64,38 @@ const startCamera = async () => {
             stopCamera();
         }
 
-        // Tenta iniciar com foco contínuo ideal para leitura de pequenos textos
-        const constraints = {
-            video: {
-                facingMode: facingMode.value,
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                focusMode: { ideal: 'continuous' },
-            },
-            audio: false,
-        };
+        // Tenta iniciar com câmera traseira de alta resolução para documentos
+        let stream = null;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: { ideal: 'environment' },
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                },
+                audio: false,
+            });
+        } catch (firstErr) {
+            console.warn('Tentativa com constraints ideais falhou, tentando fallback direto:', firstErr);
+            // Fallback caso o dispositivo não aceite os parâmetros de resolução
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' } },
+                audio: false,
+            });
+        }
 
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        mediaStream = stream;
+
+        // Aguarda renderização do elemento de vídeo caso ainda esteja montando
+        await nextTick();
 
         if (videoRef.value) {
             videoRef.value.srcObject = mediaStream;
-            videoRef.value.play();
+            try {
+                await videoRef.value.play();
+            } catch (playErr) {
+                console.warn('Erro ao disparar play no vídeo:', playErr);
+            }
             isStreamActive.value = true;
         }
 
@@ -126,11 +140,6 @@ const toggleTorch = async () => {
     }
 };
 
-const toggleFacingMode = () => {
-    facingMode.value = facingMode.value === 'environment' ? 'user' : 'environment';
-    startCamera();
-};
-
 const switchMode = (mode) => {
     activeMode.value = mode;
     if (mode === 'camera') {
@@ -139,6 +148,17 @@ const switchMode = (mode) => {
         stopCamera();
     }
 };
+
+// Monitora abertura do modal para acionar a câmera traseira automaticamente de primeira
+watch(() => props.isOpen, async (newVal) => {
+    if (newVal) {
+        activeMode.value = 'camera';
+        await nextTick();
+        startCamera();
+    } else {
+        stopCamera();
+    }
+}, { immediate: true });
 
 const captureFromVideo = () => {
     if (!videoRef.value || !isStreamActive.value) return;
@@ -325,10 +345,9 @@ onBeforeUnmount(() => {
                         </div>
 
                         <!-- Camera Controls Overlay (Top Right) -->
-                        <div class="absolute top-3 right-3 flex items-center gap-2">
+                        <div v-if="isTorchSupported" class="absolute top-3 right-3 flex items-center gap-2">
                             <!-- Torch Button -->
                             <button 
-                                v-if="isTorchSupported"
                                 @click="toggleTorch" 
                                 type="button" 
                                 class="p-2 rounded-xl backdrop-blur-md border transition-colors"
@@ -336,16 +355,6 @@ onBeforeUnmount(() => {
                                 :title="isTorchOn ? 'Desligar Lanterna' : 'Ligar Lanterna'"
                             >
                                 <Flashlight class="w-4 h-4" />
-                            </button>
-
-                            <!-- Switch Camera Flip Button -->
-                            <button 
-                                @click="toggleFacingMode" 
-                                type="button" 
-                                class="p-2 rounded-xl bg-slate-900/80 backdrop-blur-md text-slate-300 hover:text-white border border-slate-700/80 transition-colors"
-                                title="Alternar Câmera"
-                            >
-                                <SwitchCamera class="w-4 h-4" />
                             </button>
                         </div>
                     </div>

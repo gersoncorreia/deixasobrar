@@ -127,12 +127,30 @@
   5. **100% de Aprovação nos Testes Automatizados**:
      * 63 testes com 464 asserções aprovados com sucesso (`PASS`).
 
+### 7. Inicialização Automática da Câmera Traseira & Remoção da Câmera Frontal
+* **Data**: 02/10/2026
+* **Problema Identificado**:
+  * Ao clicar para escanear no celular, a câmera não abria de primeira (o modal ficava sem vídeo até clicar no botão de alternar câmera).
+  * O botão de alternar para a câmera frontal existia desnecessariamente, já que a câmera de selfie não faz sentido para leitura de cupons fiscais e documentos.
+* **Soluções Implementadas**:
+  1. **Acionamento Imediato no Modal (`watch(isOpen)`)**:
+     * Adicionado observador reativo com `nextTick()` em [`NativeScannerModal.vue`](file:///c:/Users/Gerson/Documents/PROJETOS%20LARAVEL/deixasobrar/resources/js/Components/Scanner/NativeScannerModal.vue). Assim que o modal abre, a câmera é inicializada na hora, sem exigir nenhuma ação adicional do usuário.
+  2. **Travamento Exclusivo na Câmera Traseira (`environment`)**:
+     * Fixado `{ facingMode: { ideal: 'environment' } }` com resolução ideal Full HD e fallback resiliente automático caso o dispositivo tenha restrições de resolução.
+  3. **Remoção da Câmera Frontal**:
+     * Removido o botão de alternar câmera (`<SwitchCamera />`) e a função `toggleFacingMode()`.
+     * Mantido apenas o botão de Lanterna (Torch) quando o aparelho tiver suporte para flash/iluminação.
+  4. **Validação**:
+     * Compilação Vite executada com sucesso (`✓ built in 14.32s`).
+     * 63 testes automatizados (464 asserções) com **100% de aprovação (`PASS`)**.
+
 ---
 
 ## 🛠️ Arquivos Chave Modificados e Responsabilidades
 
 | Arquivo | Finalidade |
 | :--- | :--- |
+| `resources/js/Components/Scanner/NativeScannerModal.vue` | Abertura automática da câmera traseira de primeira ao abrir o modal, fallback resiliente e remoção da opção de câmera frontal. |
 | `app/Services/VisionOcrService.php` | Redimensionamento GD prévio, cadeia resiliente de modelos, timeout de 60s, prompt NFC-e e motor de categorização automática. |
 | `app/Actions/Receipts/ProcessReceiptScanAction.php` | Persistência de `ReceiptScan` e de `ReceiptItem` com cálculo preciso de `total_price`. |
 | `app/Http/Controllers/ReceiptScannerController.php` | Filtros por estabelecimento/CNPJ, radar de comparação de preços e agregação de estabelecimentos. |
@@ -147,9 +165,10 @@
 
 ## 🚀 Próximos Passos Sugeridos / Onde Paramos
 1. **Deploy / Atualização no Servidor HostGator**:
-   * O usuário deve rodar `git pull origin main` no terminal cPanel/SSH da HostGator e `php artisan config:cache` (ou recarregar arquivos modificados).
-2. **Realizar Novo Teste via Celular**: Escanear a nota para validar a experiência ao vivo em produção.
+   * O usuário deve rodar `git pull origin main` no terminal cPanel/SSH da HostGator e recarregar os arquivos da aplicação.
+2. **Realizar Novo Teste via Celular**: Escanear a nota com abertura instantânea da câmera traseira.
 3. **Alertas Preventivos de Contas Fixas**: Refinar avisos inteligentes antes da data de vencimento.
+
 
 
 
